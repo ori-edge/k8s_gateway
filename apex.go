@@ -27,7 +27,9 @@ func (gw *Gateway) serveApex(state request.Request) (int, error) {
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
 
-	state.W.WriteMsg(m)
+	if err := state.W.WriteMsg(m); err != nil {
+		log.Errorf("Failed to send a response: %s", err)
+	}
 	return 0, nil
 }
 
@@ -43,7 +45,9 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 	default:
 		m.SetRcode(m, dns.RcodeNameError)
 		m.Ns = []dns.RR{gw.soa(state)}
-		state.W.WriteMsg(m)
+		if err := state.W.WriteMsg(m); err != nil {
+			log.Errorf("Failed to send a response: %s", err)
+		}
 		return 0, nil
 	case 2:
 		nl, _ := dns.NextLabel(base, 0)
@@ -52,7 +56,9 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 			// nxdomain
 			m.SetRcode(m, dns.RcodeNameError)
 			m.Ns = []dns.RR{gw.soa(state)}
-			state.W.WriteMsg(m)
+			if err := state.W.WriteMsg(m); err != nil {
+				log.Errorf("Failed to send a response: %s", err)
+			}
 			return 0, nil
 		}
 
@@ -76,13 +82,17 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 			m.Ns = []dns.RR{gw.soa(state)}
 		}
 
-		state.W.WriteMsg(m)
+		if err := state.W.WriteMsg(m); err != nil {
+			log.Errorf("Failed to send a response: %s", err)
+		}
 		return 0, nil
 
 	case 1:
 		// nodata for the dns empty non-terminal
 		m.Ns = []dns.RR{gw.soa(state)}
-		state.W.WriteMsg(m)
+		if err := state.W.WriteMsg(m); err != nil {
+			log.Errorf("Failed to send a response: %s", err)
+		}
 		return 0, nil
 	}
 }

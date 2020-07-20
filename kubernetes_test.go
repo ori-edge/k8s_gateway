@@ -62,14 +62,20 @@ func isFound(s string, ss []string) bool {
 func addServices(client kubernetes.Interface) {
 	ctx := context.TODO()
 	for _, svc := range testServices {
-		client.CoreV1().Services("ns").Create(ctx, svc, meta.CreateOptions{})
+		_, err := client.CoreV1().Services("ns").Create(ctx, svc, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create Service Objects")
+		}
 	}
 }
 
 func addIngresses(client kubernetes.Interface) {
 	ctx := context.TODO()
 	for _, ingress := range testIngresses {
-		client.NetworkingV1beta1().Ingresses("ns").Create(ctx, ingress, meta.CreateOptions{})
+		_, err := client.NetworkingV1beta1().Ingresses("ns").Create(ctx, ingress, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create Ingress Objects")
+		}
 	}
 }
 

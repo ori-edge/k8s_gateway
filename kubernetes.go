@@ -15,10 +15,9 @@ import (
 )
 
 const (
-	defaultResyncPeriod       = 0
-	ingressHostnameIndex      = "ingressHostname"
-	serviceHostnameIndex      = "serviceHostname"
-	ingressNameNamespaceIndex = "NameNamespace"
+	defaultResyncPeriod  = 0
+	ingressHostnameIndex = "ingressHostname"
+	serviceHostnameIndex = "serviceHostname"
 )
 
 // KubeController stores the current runtime configuration and cache

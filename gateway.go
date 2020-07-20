@@ -135,7 +135,9 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	if len(addrs) == 0 {
 		m.Rcode = dns.RcodeNameError
 		m.Ns = []dns.RR{gw.soa(state)}
-		w.WriteMsg(m)
+		if err := w.WriteMsg(m); err != nil {
+			log.Errorf("Failed to send a response: %s", err)
+		}
 		return 0, nil
 	}
 
@@ -150,7 +152,9 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
 
-	w.WriteMsg(m)
+	if err := w.WriteMsg(m); err != nil {
+		log.Errorf("Failed to send a response: %s", err)
+	}
 
 	return dns.RcodeSuccess, nil
 }

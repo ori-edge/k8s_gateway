@@ -18,6 +18,7 @@ func init() {
 	var alreadyAdded bool
 
 	for _, name := range dnsserver.Directives {
+
 		if dropPlugins[name] {
 			if !alreadyAdded {
 				directives = append(directives, "k8s_gateway")
