@@ -1,8 +1,8 @@
 # k8s_gateway
 
-Similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and `networking.x-k8s.io/Gateway` (when it becomes available).
+A CoreDNS plugin to resolve all types of external Kubernetes resources. Similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and `networking.x-k8s.io/Gateway` (when it becomes available).
 
-This plugin relies on it's own connection to the k8s APi server (using client-go) and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
+This plugin relies on it's own connection to the k8s APi server and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
 
 ## Description
 
@@ -11,9 +11,9 @@ This plugin relies on it's own connection to the k8s APi server (using client-go
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
 | Ingress | all FQDNs from `spec.rules[*].host` matching specified zones | `.status.loadBalancer.ingress` |
-| Service[^1] | `name.namespace` + any of the specified zones | `.status.loadBalancer.ingress` | 
+| Service[*] | `name.namespace` + any of the specified zones | `.status.loadBalancer.ingress` | 
 
-[^1]: Only resolves service type LoadBalancer
+[*]: Only resolves service of type LoadBalancer
 
 Currently only supports A-type queries, all other queries result in NODATA responses.
 
@@ -39,21 +39,21 @@ k8s_gateway example.com {
 ### With compile-time configuration file
 
 ```
-$ git clone https://github.com/coredns/coredns
-$ cd coredns
+$ git clone https://github.com/ori-edge/k8s_external
+$ cd k8s_external
 $ vim plugin.cfg
-# Add the line alias:github.com/serverwentdown/alias before the file middleware
+# Replace lines with kubernetes and k8s_external with k8s_external:github.com/ori-edge/k8s_external
 $ go generate
 $ go build
-$ ./coredns -plugins | grep alias
+$ ./coredns -plugins | grep k8s_external
 ```
 
 ### With external golang source code
 ```
-$ git clone https://github.com/serverwentdown/alias
+$ git clone https://github.com/ori-edge/k8s_external
 $ cd k8s_gateway
 $ go build cmd/coredns.go
-$ ./coredns -plugins | grep alias
+$ ./coredns -plugins | grep k8s_external
 ```
 
 For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compile-time-enabling-or-disabling-plugins/)
@@ -63,10 +63,3 @@ For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compi
 ## Also see
 
 TODO: Blogpost
-
-
-## TODO
-
-[] Readme
-[] Blogpost
-[] Tilt cleanup https://github.com/kubernetes-sigs/cluster-api/blob/master/Tiltfile
