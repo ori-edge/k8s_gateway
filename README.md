@@ -1,17 +1,17 @@
 # k8s_gateway
 
-A CoreDNS plugin to resolve all types of external Kubernetes resources. Similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and `networking.x-k8s.io/Gateway` (when it becomes available).
+A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and `networking.x-k8s.io/Gateway` (when it becomes available). 
 
-This plugin relies on it's own connection to the k8s APi server and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
+This plugin relies on it's own connection to the k8s API server and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
 
 ## Description
 
-`k8s_gateway` resolves Kubernetes resources with their external IP addresses. Based on zones specified in the configuration, this plugin will resolve the following type of resources:
+`k8s_gateway` resolves Kubernetes resources with their external IP addresses based on zones specified in the configuration. This plugin will resolve the following type of resources:
 
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
-| Ingress | all FQDNs from `spec.rules[*].host` matching specified zones | `.status.loadBalancer.ingress` |
-| Service[*] | `name.namespace` + any of the specified zones | `.status.loadBalancer.ingress` | 
+| Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
+| Service[*] | `name.namespace` + any of the configured zones | `.status.loadBalancer.ingress` | 
 
 [*]: Only resolves service of type LoadBalancer
 
@@ -39,13 +39,13 @@ k8s_gateway example.com {
 ### With compile-time configuration file
 
 ```
-$ git clone https://github.com/ori-edge/k8s_external
-$ cd k8s_external
+$ git clone https://github.com/coredns/coredns
+$ cd coredns
 $ vim plugin.cfg
-# Replace lines with kubernetes and k8s_external with k8s_external:github.com/ori-edge/k8s_external
+# Replace lines with kubernetes and k8s_external with k8s_gateway:github.com/ori-edge/k8s_gateway
 $ go generate
 $ go build
-$ ./coredns -plugins | grep k8s_external
+$ ./coredns -plugins | grep k8s_gateway
 ```
 
 ### With external golang source code
@@ -58,6 +58,20 @@ $ ./coredns -plugins | grep k8s_external
 
 For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compile-time-enabling-or-disabling-plugins/)
 
+
+## Hack
+
+This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To setup a local environment do:
+
+```
+make up
+```
+
+Some test resources can be added to the k8s cluster with:
+
+```
+kubectl apply -f ./test/test.yml
+```
 
 
 ## Also see
