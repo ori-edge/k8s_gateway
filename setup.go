@@ -8,7 +8,10 @@ import (
 	"github.com/caddyserver/caddy"
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
+	clog "github.com/coredns/coredns/plugin/pkg/log"
 )
+
+var log = clog.NewWithPlugin(thisPlugin)
 
 const thisPlugin = "k8s_gateway"
 

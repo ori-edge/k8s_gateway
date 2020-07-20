@@ -12,7 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog"
 )
 
 const (
@@ -31,7 +30,7 @@ type KubeController struct {
 
 func newKubeController(ctx context.Context, c *kubernetes.Clientset) *KubeController {
 
-	klog.Infof("Starting k8s_gateway controller")
+	log.Infof("Starting k8s_gateway controller")
 
 	ctrl := &KubeController{
 		client: c,
@@ -82,7 +81,7 @@ func (ctrl *KubeController) run() {
 	if !cache.WaitForCacheSync(stopCh, synced...) {
 		ctrl.hasSynced = false
 	}
-	klog.Infof("Synced all required resources")
+	log.Infof("Synced all required resources")
 	ctrl.hasSynced = true
 
 	<-stopCh
@@ -145,7 +144,7 @@ func ingressHostnameIndexFunc(obj interface{}) ([]string, error) {
 
 	var hostnames []string
 	for _, rule := range ingress.Spec.Rules {
-		klog.Infof("Adding index %s for ingress %s", rule.Host, ingress.Name)
+		log.Debugf("Adding index %s for ingress %s", rule.Host, ingress.Name)
 		hostnames = append(hostnames, rule.Host)
 	}
 	return hostnames, nil
@@ -162,7 +161,7 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	}
 
 	hostname := service.Name + "." + service.Namespace
-	klog.Infof("Adding index %s for service %s", hostname, service.Name)
+	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil
 }
@@ -174,7 +173,7 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 			obj, _ := ctrl.GetIndexer().ByIndex(serviceHostnameIndex, key)
 			objs = append(objs, obj...)
 		}
-
+		log.Debugf("Found %d matching Service objects", len(objs))
 		for _, obj := range objs {
 			service, _ := obj.(*core.Service)
 
@@ -191,7 +190,7 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 			obj, _ := ctrl.GetIndexer().ByIndex(ingressHostnameIndex, key)
 			objs = append(objs, obj...)
 		}
-
+		log.Debugf("Found %d matching Ingress objects", len(objs))
 		for _, obj := range objs {
 			ingress, _ := obj.(*networking.Ingress)
 
@@ -205,6 +204,7 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 func fetchLoadBalancerIPs(lb core.LoadBalancerStatus) (results []net.IP) {
 	for _, address := range lb.Ingress {
 		if address.Hostname != "" {
+			log.Debugf("Looking up hostname %s", address.Hostname)
 			ip, err := net.LookupIP(address.Hostname)
 			if err != nil {
 				continue

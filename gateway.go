@@ -76,10 +76,12 @@ func (gw *Gateway) updateResources(newResources []string) {
 // ServeDNS implements the plugin.Handle interface.
 func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	state := request.Request{W: w, Req: r}
+	//log.Infof("Incoming query %s", state.QName())
 
 	qname := state.QName()
 	zone := plugin.Zones(gw.Zones).Matches(qname)
 	if zone == "" {
+		log.Debugf("Request %s has not matched any zones %v", qname, gw.Zones)
 		return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
 	}
 	zone = qname[len(qname)-len(zone):] // maintain case of original query
@@ -96,6 +98,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	} else {
 		indexKeys = []string{strippedQName}
 	}
+	log.Debugf("Computed Index Keys %v", indexKeys)
 
 	if !gw.Controller.HasSynced() {
 		// TODO maybe there's a better way to do this? e.g. return an error back to the client?
@@ -124,6 +127,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 			break
 		}
 	}
+	log.Debugf("Computed response addresses %v", addrs)
 
 	m := new(dns.Msg)
 	m.SetReply(state.Req)

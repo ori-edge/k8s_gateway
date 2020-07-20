@@ -1,13 +1,11 @@
 
-def docker_push():
-    local("docker push localhost:5000/coredns")
 
 def local_build():
     local("CGO_ENABLED=0  go build cmd/coredns.go")
 
 
 local_build()
-docker_build('localhost:5000/coredns', '.', dockerfile='./Dockerfile')
+docker_build('localhost:5000/coredns', '.', dockerfile='./DockerfileTilt')
 
 
 k8s_kind("kind")

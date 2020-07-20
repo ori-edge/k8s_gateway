@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    # The builds triggered by a 'push' will only happen when merging to
+    # master. That's because we don't want a duplicate build on pull
+    # requests (push + pull_request events).
+    branches:
+      - master
+
+jobs:
+  # Linting is in a separate job because golangci-lint is quite slow when
+  # running it in cold-start mode.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: 1.14.4
+      - uses: actions/checkout@v2
+
+      - run: |
+          wget -O - -q https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+          wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v0.9.17
+
+      # The second run of golangci-lint is temporary; remove it when
+      # https://github.com/reviewdog/reviewdog/pull/504 is merged.
+      - run: |
+          golangci-lint run -v --out-format line-number --timeout=30m  | reviewdog -tee -f=golangci-lint -name=golangci-lint -reporter=github-pr-review
+          golangci-lint run # temporary
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Token created by Mael. Went to https://reviewdog.app/gh/ and
+          # installed the Github App. Then got a token at:
+          # https://reviewdog.app/gh/ori-edge/deploy-controllers.
+          # The token is stored in Shared-infra/reviewdog-deploy-controllers.
+          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: 1.14.4
+      - uses: actions/checkout@v2
+      - run: make test
