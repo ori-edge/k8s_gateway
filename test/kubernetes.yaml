@@ -1,0 +1,131 @@
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-myservicea
+spec:
+  rules:
+  - host: myservicea.foo.org
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myservicea
+          servicePort: 80
+---
+# Source: coredns/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: excoredns-coredns
+  namespace: kube-system
+data:
+  Corefile: |-
+    .:53 {
+        errors
+        log
+        ready
+        k8s_gateway
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+---
+# Source: coredns/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: excoredns-coredns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - namespaces
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - list
+  - watch
+---
+# Source: coredns/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: excoredns-coredns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: excoredns-coredns
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kube-system
+---
+# Source: coredns/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: excoredns-coredns
+  namespace: kube-system
+spec:
+  selector:
+    k8s-app: "coredns"
+  ports:
+  - {port: 53, protocol: UDP, name: udp-53, nodePort: 32553}
+  type: NodePort
+---
+# Source: coredns/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: excoredns-coredns
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: "coredns"
+  template:
+    metadata:
+      labels:
+        k8s-app: "coredns"
+    spec:
+      serviceAccountName: default
+      dnsPolicy: ClusterFirst
+      containers:
+      - name: "debug"
+        image: eu.gcr.io/ori-edge/jumpbox
+        imagePullPolicy: IfNotPresent
+      - name: "coredns"
+        image: "localhost:5000/coredns"
+        imagePullPolicy: IfNotPresent
+        args: [ "-conf", "/etc/coredns/Corefile" ]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        ports:
+        - {containerPort: 53, protocol: UDP, name: udp-53}
+        - {containerPort: 53, protocol: TCP, name: tcp-53}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: excoredns-coredns
+            items:
+            - key: Corefile
+              path: Corefile

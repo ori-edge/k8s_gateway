@@ -1,0 +1,29 @@
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-myserviceb
+spec:
+  rules:
+  - host: myserviceb.foo.org
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myservicea
+          servicePort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test
+spec:
+  ports:
+  - name: 80-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: test
+  sessionAffinity: None
+  type: LoadBalancer
