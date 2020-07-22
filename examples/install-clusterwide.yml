@@ -17,7 +17,7 @@ data:
         errors
         log
         ready
-        k8s_gateway
+        k8s_gateway example.com
         forward . /etc/resolv.conf
         cache 30
         loop
@@ -71,7 +71,7 @@ spec:
   selector:
     k8s-app: "excoredns"
   ports:
-  - {port: 53, protocol: UDP, name: udp-53, nodePort: 32553}
+  - {port: 53, protocol: UDP, name: udp-53}
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -93,7 +93,7 @@ spec:
       dnsPolicy: ClusterFirst
       containers:
       - name: "coredns"
-        image: "localhost:5000/coredns"
+        image: "quay.io/oriedge/k8s_gateway"
         imagePullPolicy: IfNotPresent
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:

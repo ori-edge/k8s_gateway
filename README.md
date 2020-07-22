@@ -73,7 +73,21 @@ Some test resources can be added to the k8s cluster with:
 kubectl apply -f ./test/test.yml
 ```
 
+Test queries can be sent to the exposed CoreDNS service like this:
+
+```
+$ ip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
+$ dig @$ip -p 32553 myservicea.foo.org +short
+172.18.0.2
+$ dig @$ip -p 32553 test.default +short
+192.168.1.241
+```
 
 ## Also see
 
 TODO: Blogpost
+
+
+## TODO:
+
+[] - add explicit (no-)fallthrough
