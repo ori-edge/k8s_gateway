@@ -1,11 +1,20 @@
+load('ext://restart_process', 'docker_build_with_restart')
 
+IMG = 'localhost:5000/coredns'
 
-def local_build():
-    local("CGO_ENABLED=0  go build cmd/coredns.go")
+def binary():
+    return "CGO_ENABLED=0  GOOS=linux GOATCH=amd64 GO111MODULE=on go build cmd/coredns.go"
 
+local_resource('recompile', binary(), deps=['cmd', 'gateway.go', 'kubernetes.go', 'setup.go'])
 
-local_build()
-docker_build('localhost:5000/coredns', '.', dockerfile='./DockerfileTilt')
+docker_build_with_restart(IMG, '.', 
+    dockerfile='tilt.Dockerfile', 
+    entrypoint=['/coredns'], 
+    only=['./coredns'], 
+    live_update=[
+        sync('./coredns', '/coredns'),
+        ]
+    )
 
 
 k8s_kind("kind")
@@ -18,7 +27,3 @@ k8s_yaml('./test/ingress.yaml')
 
 # Metallb
 k8s_yaml('./test/metallb.yaml')
-
-watch_file("./gateway.go")
-watch_file("./kubernetes.go")
-watch_file("./cmd/*.go")

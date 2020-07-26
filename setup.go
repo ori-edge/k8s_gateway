@@ -20,6 +20,7 @@ func init() {
 }
 
 func setup(c *caddy.Controller) error {
+
 	gw, err := parse(c)
 	if err != nil {
 		return plugin.Error(thisPlugin, err)
