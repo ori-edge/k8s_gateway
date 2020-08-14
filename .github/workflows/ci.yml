@@ -31,10 +31,6 @@ jobs:
           golangci-lint run # temporary
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Token created by Mael. Went to https://reviewdog.app/gh/ and
-          # installed the Github App. Then got a token at:
-          # https://reviewdog.app/gh/ori-edge/deploy-controllers.
-          # The token is stored in Shared-infra/reviewdog-deploy-controllers.
           REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
 
   unit-test:
