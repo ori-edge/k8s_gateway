@@ -85,9 +85,4 @@ $ dig @$ip -p 32553 test.default +short
 
 ## Also see
 
-TODO: Blogpost
-
-
-## TODO:
-
-[] - add explicit (no-)fallthrough
+[Blogpost](https://networkop.co.uk/post/2020-08-k8s-gateway/)
