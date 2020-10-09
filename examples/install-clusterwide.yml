@@ -65,7 +65,7 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  name: excoredns
+  name: external-dns
   namespace: kube-system
 spec:
   selector:

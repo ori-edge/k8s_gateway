@@ -11,6 +11,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+const defaultSvc = "external-dns.kube-system"
+
 type lookupFunc func(indexKeys []string) []net.IP
 
 type resourceWithIndex struct {
@@ -54,6 +56,7 @@ func newGateway() *Gateway {
 }
 
 func lookupResource(resource string) *resourceWithIndex {
+
 	for _, r := range orderedResources {
 		if r.name == resource {
 			return r
@@ -164,8 +167,12 @@ func (gw *Gateway) Name() string { return thisPlugin }
 
 // A does the A-record lookup in ingress indexer
 func (gw *Gateway) A(state request.Request, results []net.IP) (records []dns.RR) {
+	dup := make(map[string]struct{})
 	for _, result := range results {
-		records = append(records, &dns.A{Hdr: dns.RR_Header{Name: state.Name(), Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttl}, A: result})
+		if _, ok := dup[result.String()]; !ok {
+			dup[result.String()] = struct{}{}
+			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: state.Name(), Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttl}, A: result})
+		}
 	}
 	return records
 }
@@ -175,6 +182,25 @@ func (gw *Gateway) selfAddress(state request.Request) (records []dns.RR) {
 	// a) my own namespace - easy
 	// b) my own serviceName - CoreDNS/k does that via localIP->Endpoint->Service
 	// I don't really want to list Endpoints just for that so will fix that later
+
+	// As a workaround I'm reading an env variable (with a default)
+	//// TODO: update docs to surface this knob
+	//index := os.Getenv("EXTERNAL_SVC")
+	//if index == "" {
+	//	index = defaultSvc
+	//}
+	//
+	//var addrs []net.IP
+	//for _, resource := range gw.Resources {
+	//	addrs = resource.lookup([]string{index})
+	//	if len(addrs) > 0 {
+	//		break
+	//	}
+	//}
+	//
+	//m := new(dns.Msg)
+	//m.SetReply(state.Req)
+	//return gw.A(state, addrs)
 	return records
 }
 

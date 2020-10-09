@@ -5,7 +5,7 @@ IMG = 'localhost:5000/coredns'
 def binary():
     return "CGO_ENABLED=0  GOOS=linux GOATCH=amd64 GO111MODULE=on go build cmd/coredns.go"
 
-local_resource('recompile', binary(), deps=['cmd', 'gateway.go', 'kubernetes.go', 'setup.go'])
+local_resource('recompile', binary(), deps=['cmd', 'gateway.go', 'kubernetes.go', 'setup.go', 'apex.go'])
 
 docker_build_with_restart(IMG, '.', 
     dockerfile='tilt.Dockerfile', 

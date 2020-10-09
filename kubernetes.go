@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"net"
+	"strings"
 
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
@@ -169,7 +170,7 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 	return func(indexKeys []string) (result []net.IP) {
 		var objs []interface{}
 		for _, key := range indexKeys {
-			obj, _ := ctrl.GetIndexer().ByIndex(serviceHostnameIndex, key)
+			obj, _ := ctrl.GetIndexer().ByIndex(serviceHostnameIndex, strings.ToLower(key))
 			objs = append(objs, obj...)
 		}
 		log.Debugf("Found %d matching Service objects", len(objs))
@@ -186,7 +187,7 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 	return func(indexKeys []string) (result []net.IP) {
 		var objs []interface{}
 		for _, key := range indexKeys {
-			obj, _ := ctrl.GetIndexer().ByIndex(ingressHostnameIndex, key)
+			obj, _ := ctrl.GetIndexer().ByIndex(ingressHostnameIndex, strings.ToLower(key))
 			objs = append(objs, obj...)
 		}
 		log.Debugf("Found %d matching Ingress objects", len(objs))

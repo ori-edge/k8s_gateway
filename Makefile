@@ -4,6 +4,9 @@ BIN := $(shell basename $$PWD)
 # Where to push the docker image.
 REGISTRY ?= quay.io/oriedge
 
+# Tag 
+TAG ?= latest
+
 # Image URL to use all building/pushing image targets
 IMG ?= $(REGISTRY)/$(BIN)
 
@@ -17,7 +20,7 @@ down:
 	tilt down
 
 nuke: 
-	kind delete cluster --name kind
+	-./test/teardown-kind-with-registry.sh &>/dev/null
 
 build:
 	CGO_ENABLED=0 go build cmd/coredns.go
@@ -31,4 +34,7 @@ clean:
 	rm -f coredns
 
 image: 
-	docker build . -t ${IMG}
+	docker build . -t ${IMG}:${TAG}
+
+release:
+	docker push ${IMG}:${TAG}

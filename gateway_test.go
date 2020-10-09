@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"net"
+	"strings"
 	"testing"
 
 	"github.com/coredns/coredns/plugin/pkg/dnstest"
@@ -127,6 +128,20 @@ var tests = []test.Case{
 			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
+	// Existing Ingress with a mix of lower and upper case letters
+	{
+		Qname: "dOmAiN.eXamPLe.cOm.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("domain.example.com.	5	IN	A	192.0.0.1"),
+		},
+	},
+	// Existing Service with a mix of lower and upper case letters
+	{
+		Qname: "svC1.Ns1.exAmplE.Com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("svc1.ns1.example.com.	5	IN	A	192.0.1.1"),
+		},
+	},
 }
 
 var testServiceIndexes = map[string][]net.IP{
@@ -137,7 +152,7 @@ var testServiceIndexes = map[string][]net.IP{
 
 func testServiceLookup(keys []string) (results []net.IP) {
 	for _, key := range keys {
-		results = append(results, testServiceIndexes[key]...)
+		results = append(results, testServiceIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
@@ -150,7 +165,7 @@ var testIngressIndexes = map[string][]net.IP{
 
 func testIngressLookup(keys []string) (results []net.IP) {
 	for _, key := range keys {
-		results = append(results, testIngressIndexes[key]...)
+		results = append(results, testIngressIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }

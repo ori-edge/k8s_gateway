@@ -56,9 +56,17 @@ containerdConfigPatches:
     endpoint = ["http://${reg_host}:${reg_port}"]
 EOF
 
-for node in $(kind get nodes --name "${KIND_CLUSTER_NAME}"); do
-  kubectl annotate node "${node}" tilt.dev/registry=localhost:${reg_port};
-done
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:${reg_port}"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+EOF
 
 if [ "${kind_network}" != "bridge" ]; then
   containers=$(docker network inspect ${kind_network} -f "{{range .Containers}}{{.Name}} {{end}}")

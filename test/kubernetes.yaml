@@ -17,7 +17,7 @@ data:
         errors
         log
         ready
-        k8s_gateway
+        k8s_gateway foo.org
         forward . /etc/resolv.conf
         cache 30
         loop
@@ -65,7 +65,7 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  name: excoredns
+  name: external-dns
   namespace: kube-system
 spec:
   selector:
