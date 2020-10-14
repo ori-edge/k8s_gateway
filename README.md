@@ -83,6 +83,10 @@ $ dig @$ip -p 32553 test.default.foo.org +short
 192.168.1.241
 ```
 
+## Notes regarding Zone Apex and NS server resolution
+
+Due to the fact that there is not nice way to discover NS server's own IP to respond to A queries, as a wokaround, it's possible to pass the name of the LoadBalancer service used to expose the CoreDNS instance as an environment variable `EXTERNAL_SVC`. If not set, the default fallback value of `external-dns.kube-system` will be used to look up the external IP of the CoreDNS service.
+
 ## Also see
 
 [Blogpost](https://networkop.co.uk/post/2020-08-k8s-gateway/)

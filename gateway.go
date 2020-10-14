@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	"github.com/coredns/coredns/plugin"
@@ -185,23 +186,23 @@ func (gw *Gateway) selfAddress(state request.Request) (records []dns.RR) {
 
 	// As a workaround I'm reading an env variable (with a default)
 	//// TODO: update docs to surface this knob
-	//index := os.Getenv("EXTERNAL_SVC")
-	//if index == "" {
-	//	index = defaultSvc
-	//}
-	//
-	//var addrs []net.IP
-	//for _, resource := range gw.Resources {
-	//	addrs = resource.lookup([]string{index})
-	//	if len(addrs) > 0 {
-	//		break
-	//	}
-	//}
-	//
-	//m := new(dns.Msg)
-	//m.SetReply(state.Req)
-	//return gw.A(state, addrs)
-	return records
+	index := os.Getenv("EXTERNAL_SVC")
+	if index == "" {
+		index = defaultSvc
+	}
+
+	var addrs []net.IP
+	for _, resource := range gw.Resources {
+		addrs = resource.lookup([]string{index})
+		if len(addrs) > 0 {
+			break
+		}
+	}
+
+	m := new(dns.Msg)
+	m.SetReply(state.Req)
+	return gw.A(state, addrs)
+	//return records
 }
 
 // Strips the zone from FQDN and return a hostname
