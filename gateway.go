@@ -38,13 +38,14 @@ var (
 
 // Gateway stores all runtime configuration of a plugin
 type Gateway struct {
-	Next       plugin.Handler
-	Zones      []string
-	Resources  []*resourceWithIndex
-	ttl        uint32
-	Controller *KubeController
-	apex       string
-	hostmaster string
+	Next             plugin.Handler
+	Zones            []string
+	Resources        []*resourceWithIndex
+	ttl              uint32
+	Controller       *KubeController
+	apex             string
+	hostmaster       string
+	ExternalAddrFunc func(request.Request) []dns.RR
 }
 
 func newGateway() *Gateway {
@@ -178,7 +179,7 @@ func (gw *Gateway) A(state request.Request, results []net.IP) (records []dns.RR)
 	return records
 }
 
-func (gw *Gateway) selfAddress(state request.Request) (records []dns.RR) {
+func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 	// TODO: need to do self-index lookup for that i need
 	// a) my own namespace - easy
 	// b) my own serviceName - CoreDNS/k does that via localIP->Endpoint->Service
