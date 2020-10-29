@@ -31,7 +31,8 @@ var orderedResources = []*resourceWithIndex{
 }
 
 var (
-	defaultTTL        = uint32(5)
+	ttlLowDefault     = uint32(60)
+	ttlHighDefault    = uint32(3600)
 	defaultApex       = "dns"
 	defaultHostmaster = "hostmaster"
 )
@@ -41,7 +42,8 @@ type Gateway struct {
 	Next             plugin.Handler
 	Zones            []string
 	Resources        []*resourceWithIndex
-	ttl              uint32
+	ttlLow           uint32
+	ttlHigh          uint32
 	Controller       *KubeController
 	apex             string
 	hostmaster       string
@@ -51,7 +53,8 @@ type Gateway struct {
 func newGateway() *Gateway {
 	return &Gateway{
 		Resources:  orderedResources,
-		ttl:        defaultTTL,
+		ttlLow:     ttlLowDefault,
+		ttlHigh:    ttlHighDefault,
 		apex:       defaultApex,
 		hostmaster: defaultHostmaster,
 	}
@@ -173,7 +176,7 @@ func (gw *Gateway) A(state request.Request, results []net.IP) (records []dns.RR)
 	for _, result := range results {
 		if _, ok := dup[result.String()]; !ok {
 			dup[result.String()] = struct{}{}
-			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: state.Name(), Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttl}, A: result})
+			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: state.Name(), Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: result})
 		}
 	}
 	return records

@@ -19,7 +19,7 @@ func (gw *Gateway) serveApex(state request.Request) (int, error) {
 
 		addr := gw.ExternalAddrFunc(state)
 		for _, rr := range addr {
-			rr.Header().Ttl = gw.ttl
+			rr.Header().Ttl = gw.ttlHigh
 			rr.Header().Name = dnsutil.Join("ns1", gw.apex, state.QName())
 			m.Extra = append(m.Extra, rr)
 		}
@@ -64,7 +64,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 
 		addr := gw.ExternalAddrFunc(state)
 		for _, rr := range addr {
-			rr.Header().Ttl = gw.ttl
+			rr.Header().Ttl = gw.ttlHigh
 			rr.Header().Name = state.QName()
 			switch state.QType() {
 			case dns.TypeA:
@@ -98,7 +98,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 }
 
 func (gw *Gateway) soa(state request.Request) *dns.SOA {
-	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeSOA, Ttl: gw.ttl, Class: dns.ClassINET}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeSOA, Ttl: gw.ttlHigh, Class: dns.ClassINET}
 
 	soa := &dns.SOA{Hdr: header,
 		Mbox:    dnsutil.Join(gw.hostmaster, gw.apex, state.Zone),
@@ -107,13 +107,13 @@ func (gw *Gateway) soa(state request.Request) *dns.SOA {
 		Refresh: 7200,
 		Retry:   1800,
 		Expire:  86400,
-		Minttl:  gw.ttl,
+		Minttl:  gw.ttlHigh,
 	}
 	return soa
 }
 
 func (gw *Gateway) ns(state request.Request) *dns.NS {
-	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttl, Class: dns.ClassINET}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlHigh, Class: dns.ClassINET}
 	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join("ns1", gw.apex, state.Zone)}
 
 	return ns

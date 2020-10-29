@@ -78,7 +78,7 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 				if t < 0 || t > 3600 {
 					return nil, c.Errf("ttl must be in range [0, 3600]: %d", t)
 				}
-				gw.ttl = uint32(t)
+				gw.ttlLow = uint32(t)
 			default:
 				return nil, c.Errf("Unknown property '%s'", c.Val())
 			}
