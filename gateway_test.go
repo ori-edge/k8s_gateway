@@ -69,77 +69,77 @@ var tests = []test.Case{
 	{
 		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("svc1.ns1.example.com.	5	IN	A	192.0.1.1"),
+			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
 	},
 	// Existing Ingress
 	{
 		Qname: "domain.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("domain.example.com.	5	IN	A	192.0.0.1"),
+			test.A("domain.example.com.	60	IN	A	192.0.0.1"),
 		},
 	},
 	// Ingress takes precedence over services
 	{
 		Qname: "svc2.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("svc2.ns1.example.com.	5	IN	A	192.0.0.2"),
+			test.A("svc2.ns1.example.com.	60	IN	A	192.0.0.2"),
 		},
 	},
 	// Non-existing Service
 	{
 		Qname: "svcX.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Non-existing Ingress
 	{
 		Qname: "d0main.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// SOA for the existing domain
 	{
 		Qname: "domain.example.com.", Qtype: dns.TypeSOA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Service with no public addresses
 	{
 		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Real service, wrong query type
 	{
 		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Ingress FQDN == zone
 	{
 		Qname: "example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Existing Ingress with a mix of lower and upper case letters
 	{
 		Qname: "dOmAiN.eXamPLe.cOm.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("domain.example.com.	5	IN	A	192.0.0.1"),
+			test.A("domain.example.com.	60	IN	A	192.0.0.1"),
 		},
 	},
 	// Existing Service with a mix of lower and upper case letters
 	{
 		Qname: "svC1.Ns1.exAmplE.Com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("svc1.ns1.example.com.	5	IN	A	192.0.1.1"),
+			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
 	},
 }

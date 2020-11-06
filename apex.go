@@ -13,7 +13,7 @@ func (gw *Gateway) serveApex(state request.Request) (int, error) {
 	m.SetReply(state.Req)
 	switch state.QType() {
 	case dns.TypeSOA:
-		m.Authoritative = true // For some reason this flag is not set on the first non-cached response ?
+		//m.Authoritative = true // For some reason this flag is not set on the first non-cached response ?
 		m.Answer = []dns.RR{gw.soa(state)}
 		m.Ns = []dns.RR{gw.ns(state)} // This fixes some of the picky DNS resolvers
 	case dns.TypeNS:

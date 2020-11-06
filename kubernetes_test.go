@@ -62,9 +62,9 @@ func isFound(s string, ss []string) bool {
 func addServices(client kubernetes.Interface) {
 	ctx := context.TODO()
 	for _, svc := range testServices {
-		_, err := client.CoreV1().Services("ns").Create(ctx, svc, meta.CreateOptions{})
+		_, err := client.CoreV1().Services("ns1").Create(ctx, svc, meta.CreateOptions{})
 		if err != nil {
-			log.Warningf("Failed to Create Service Objects")
+			log.Warningf("Failed to Create Service Objects :%s", err)
 		}
 	}
 }
@@ -72,9 +72,9 @@ func addServices(client kubernetes.Interface) {
 func addIngresses(client kubernetes.Interface) {
 	ctx := context.TODO()
 	for _, ingress := range testIngresses {
-		_, err := client.NetworkingV1beta1().Ingresses("ns").Create(ctx, ingress, meta.CreateOptions{})
+		_, err := client.NetworkingV1beta1().Ingresses("ns1").Create(ctx, ingress, meta.CreateOptions{})
 		if err != nil {
-			log.Warningf("Failed to Create Ingress Objects")
+			log.Warningf("Failed to Create Ingress Objects :%s", err)
 		}
 	}
 }

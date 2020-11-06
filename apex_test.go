@@ -48,58 +48,61 @@ var testsApex = []test.Case{
 	{
 		Qname: "example.com.", Qtype: dns.TypeSOA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+		},
+		Ns: []dns.RR{
+			test.NS("example.com.	3600	IN	NS	ns1.dns.example.com."),
 		},
 	},
 	{
 		Qname: "example.com.", Qtype: dns.TypeNS, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.NS("example.com.	5	IN	NS	ns1.dns.example.com."),
+			test.NS("example.com.	3600	IN	NS	ns1.dns.example.com."),
 		},
 		Extra: []dns.RR{
-			test.A("ns1.dns.example.com.	5	IN	A	127.0.0.1"),
+			test.A("ns1.dns.example.com.	3600	IN	A	127.0.0.1"),
 		},
 	},
 	{
 		Qname: "example.com.", Qtype: dns.TypeSRV, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns.example.com.", Qtype: dns.TypeSRV, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns.example.com.", Qtype: dns.TypeNS, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "ns1.dns.example.com.", Qtype: dns.TypeSRV, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "ns1.dns.example.com.", Qtype: dns.TypeNS, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "ns1.dns.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	5	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	3600	IN	SOA	ns1.dns.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "ns1.dns.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("ns1.dns.example.com.	5	IN	A	127.0.0.1"),
+			test.A("ns1.dns.example.com.	3600	IN	A	127.0.0.1"),
 		},
 	},
 }
