@@ -79,6 +79,12 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 					return nil, c.Errf("ttl must be in range [0, 3600]: %d", t)
 				}
 				gw.ttlLow = uint32(t)
+			case "apex":
+				args := c.RemainingArgs()
+				if len(args) == 0 {
+					return nil, c.ArgErr()
+				}
+				gw.apex = args[0]
 			default:
 				return nil, c.Errf("Unknown property '%s'", c.Val())
 			}
