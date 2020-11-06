@@ -39,12 +39,13 @@ kubectl apply -f https://github.com/ori-edge/k8s_gateway/blob/master/examples/in
 k8s_gateway [ZONE...] 
 ```
 
-Optionally, you can specify what kind of resources to watch and the default TTL to return in response, e.g.
+Optionally, you can specify what kind of resources to watch, default TTL to return in response and a default name to use for zone apex, e.g.
 
 ```
 k8s_gateway example.com {
     resources Ingress
     ttl 10
+    apex dns1
 }
 ```
 
