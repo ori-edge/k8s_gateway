@@ -19,6 +19,20 @@ Currently only supports A-type queries, all other queries result in NODATA respo
 
 This plugin is **NOT** supposed to be used for intra-cluster DNS resolution and does not contain the default upstream [kubernetes](https://coredns.io/plugins/kubernetes/) plugin.
 
+## Install
+
+The recommended installation method is using the helm chart provided in the repo:
+
+```
+helm install exdns --set domain=foo ./charts/k8s-gateway
+```
+
+Alternatively, for labbing and testing purposes `k8s_gateway` can be deployed with a single manifest:
+
+```
+kubectl apply -f https://github.com/ori-edge/k8s_gateway/blob/master/examples/install-clusterwide.yml
+```
+
 ## Configure
 
 ```

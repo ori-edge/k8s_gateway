@@ -1,0 +1,9 @@
+apiVersion: v1
+name: k8s-gateway
+description: A Helm chart for the k8s_gateway CoreDNS plugin
+type: application
+version: 1.0.0
+appVersion: 0.1.0
+maintainers:
+- email: michae@ori.co
+  name: Michael

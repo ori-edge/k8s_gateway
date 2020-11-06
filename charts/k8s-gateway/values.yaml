@@ -1,0 +1,20 @@
+
+image:
+  registry: quay.io
+  repository: oriedge/k8s_gateway
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Delegated domain
+domain: ""
+
+# Name to use for apex records
+apex: "dns"
+
+# TTL for non-apex responses (in seconds)
+ttl: 300
+
+
+serviceAccount:
+  create: true
+  name:
