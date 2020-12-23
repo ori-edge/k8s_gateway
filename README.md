@@ -65,7 +65,7 @@ $ ./coredns -plugins | grep k8s_gateway
 
 ### With external golang source code
 ```
-$ git clone https://github.com/ori-edge/k8s_external
+$ git clone https://github.com/ori-edge/k8s_gateway.git
 $ cd k8s_gateway
 $ go build cmd/coredns.go
 $ ./coredns -plugins | grep k8s_external
