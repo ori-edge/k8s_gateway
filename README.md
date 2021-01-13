@@ -104,4 +104,4 @@ Due to the fact that there is not nice way to discover NS server's own IP to res
 
 ## Also see
 
-[Blogpost](https://networkop.co.uk/post/2020-08-k8s-gateway/)
+[Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)
