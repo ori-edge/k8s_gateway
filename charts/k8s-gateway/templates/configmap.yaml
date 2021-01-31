@@ -16,6 +16,9 @@ data:
         k8s_gateway "{{ required "Delegated domain ('domain') is mandatory " .Values.domain }}" {
           apex {{ .Values.apex }}
           ttl {{ .Values.ttl }}
+          {{- if gt (len .Values.resources) 0 }}
+          resources {{ join " " .Values.resources }}
+          {{- end }}
         }
         prometheus 0.0.0.0:9153
         cache 30
