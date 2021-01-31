@@ -12,7 +12,7 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -o coredns cmd/coredns.go
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -o coredns cmd/coredns.go
 
 FROM debian:stable-slim
 

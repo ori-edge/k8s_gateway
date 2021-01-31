@@ -33,8 +33,6 @@ clean:
 	go clean
 	rm -f coredns
 
-image: 
-	docker build . -t ${IMG}:${TAG}
+docker: test
+	docker buildx build --push --platform linux/amd64,linux/arm64 -t ${IMG}:${TAG} .
 
-release:
-	docker push ${IMG}:${TAG}
