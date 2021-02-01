@@ -17,7 +17,7 @@ ttl: 300
 # Resources (CPU, memory etc)
 resources: []
 
-# Limit what kind of resources to watch, e.g. resources: ["Ingress"]
+# Limit what kind of resources to watch, e.g. watchedResources: ["Ingress"]
 watchedResources: []
 
 serviceAccount:
