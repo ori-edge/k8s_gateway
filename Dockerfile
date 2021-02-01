@@ -1,5 +1,7 @@
 FROM golang:1.14.4 as builder
 
+ARG LDFLAGS
+
 WORKDIR /build
 
 # Copy the Go Modules manifests
@@ -12,7 +14,7 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -o coredns cmd/coredns.go
+RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -ldflags "${LDFLAGS}" -o coredns cmd/coredns.go
 
 FROM debian:stable-slim
 
