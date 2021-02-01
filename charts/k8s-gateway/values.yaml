@@ -14,8 +14,11 @@ apex: "dns"
 # TTL for non-apex responses (in seconds)
 ttl: 300
 
-# Limit what kind of resources to watch, e.g. resources: ["Ingress"]
+# Resources (CPU, memory etc)
 resources: []
+
+# Limit what kind of resources to watch, e.g. resources: ["Ingress"]
+watchedResources: []
 
 serviceAccount:
   create: true
