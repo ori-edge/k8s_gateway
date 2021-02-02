@@ -11,8 +11,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-const defaultSvc = "external-dns.kube-system"
-
 type lookupFunc func(indexKeys []string) []net.IP
 
 type resourceWithIndex struct {
