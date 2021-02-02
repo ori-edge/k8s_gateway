@@ -14,14 +14,13 @@ data:
         }
         ready
         k8s_gateway "{{ required "Delegated domain ('domain') is mandatory " .Values.domain }}" {
-          apex {{ .Values.apex }}
+          apex {{ .Values.apex | default (include "k8s-gateway.fqdn" .) }}
           ttl {{ .Values.ttl }}
-          {{- if gt (len .Values.watchedResources) 0 }}
+          {{- if .Values.watchedResources }}
           resources {{ join " " .Values.watchedResources }}
           {{- end }}
         }
         prometheus 0.0.0.0:9153
-        cache 30
         loop
         reload
         loadbalance

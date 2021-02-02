@@ -20,9 +20,6 @@ spec:
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
-        env:
-        - name: EXTERNAL_SVC
-          value: {{ include "k8s-gateway.fullname" . }}.{{ .Release.Namespace }}
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns

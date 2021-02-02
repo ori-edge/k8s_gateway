@@ -11,17 +11,18 @@ import (
 	"github.com/miekg/dns"
 )
 
-func TestApex(t *testing.T) {
+func TestDualNS(t *testing.T) {
 
 	ctrl := &KubeController{hasSynced: true}
 	gw := newGateway()
 	gw.Zones = []string{"example.com."}
 	gw.Next = test.NextHandler(dns.RcodeSuccess, nil)
 	gw.Controller = ctrl
-	gw.ExternalAddrFunc = selfAddressTest
+	gw.ExternalAddrFunc = selfDualAddressTest
+	gw.secondNS = "dns2.kube-system"
 
 	ctx := context.TODO()
-	for i, tc := range testsApex {
+	for i, tc := range testsDualNS {
 		r := tc.Msg()
 		w := dnstest.NewRecorder(&test.ResponseWriter{})
 
@@ -44,7 +45,7 @@ func TestApex(t *testing.T) {
 	}
 }
 
-var testsApex = []test.Case{
+var testsDualNS = []test.Case{
 	{
 		Qname: "example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
@@ -57,9 +58,11 @@ var testsApex = []test.Case{
 		Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.NS("example.com.	3600	IN	NS	dns1.kube-system.example.com."),
+			test.NS("example.com.	3600	IN	NS	dns2.kube-system.example.com."),
 		},
 		Extra: []dns.RR{
 			test.A("dns1.kube-system.example.com.	3600	IN	A	127.0.0.1"),
+			test.A("dns2.kube-system.example.com.	3600	IN	A	127.0.0.2"),
 		},
 	},
 	{
@@ -98,17 +101,17 @@ var testsApex = []test.Case{
 		},
 	},
 	{
-		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeA,
-		Rcode: dns.RcodeSuccess,
-		Answer: []dns.RR{
-			test.A("dns1.kube-system.example.com.	3600	IN	A	127.0.0.1"),
-		},
-	},
-	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeAAAA,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
 			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+		},
+	},
+	{
+		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeA,
+		Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("dns1.kube-system.example.com.	3600	IN	A	127.0.0.1"),
 		},
 	},
 	{
@@ -120,7 +123,10 @@ var testsApex = []test.Case{
 	},
 }
 
-func selfAddressTest(state request.Request) []dns.RR {
-	a := test.A("dns1.kube-system.example.com. IN A 127.0.0.1")
-	return []dns.RR{a}
+func selfDualAddressTest(state request.Request) (result []dns.RR) {
+	result = append(result, test.A("dns1.kube-system.example.com. IN A 127.0.0.1"))
+	if state.QType() == dns.TypeNS {
+		result = append(result, test.A("dns2.kube-system.example.com. IN A 127.0.0.2"))
+	}
+	return result
 }

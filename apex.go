@@ -13,16 +13,16 @@ func (gw *Gateway) serveApex(state request.Request) (int, error) {
 	m.SetReply(state.Req)
 	switch state.QType() {
 	case dns.TypeSOA:
-		//m.Authoritative = true // For some reason this flag is not set on the first non-cached response ?
+		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+		// See https://github.com/coredns/coredns/pull/3573
+		m.Authoritative = true
 		m.Answer = []dns.RR{gw.soa(state)}
-		m.Ns = []dns.RR{gw.ns(state)} // This fixes some of the picky DNS resolvers
 	case dns.TypeNS:
-		m.Answer = []dns.RR{gw.ns(state)}
+		m.Answer = gw.nameservers(state)
 
 		addr := gw.ExternalAddrFunc(state)
 		for _, rr := range addr {
 			rr.Header().Ttl = gw.ttlHigh
-			rr.Header().Name = dnsutil.Join("ns1", gw.apex, state.QName())
 			m.Extra = append(m.Extra, rr)
 		}
 	default:
@@ -42,7 +42,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 	m := new(dns.Msg)
 	m.SetReply(state.Req)
 
-	// base is either dns. of ns1.dns (or another name), if it's longer return nxdomain
+	// base is gw.apex, if it's longer return nxdomain
 	switch labels := dns.CountLabel(base); labels {
 	default:
 		m.SetRcode(m, dns.RcodeNameError)
@@ -52,9 +52,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 		}
 		return 0, nil
 	case 2:
-		nl, _ := dns.NextLabel(base, 0)
-		ns := base[:nl]
-		if ns != "ns1." {
+		if base != gw.apex {
 			// nxdomain
 			m.SetRcode(m, dns.RcodeNameError)
 			m.Ns = []dns.RR{gw.soa(state)}
@@ -89,13 +87,6 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 		}
 		return 0, nil
 
-	case 1:
-		// nodata for the dns empty non-terminal
-		m.Ns = []dns.RR{gw.soa(state)}
-		if err := state.W.WriteMsg(m); err != nil {
-			log.Errorf("Failed to send a response: %s", err)
-		}
-		return 0, nil
 	}
 }
 
@@ -104,7 +95,7 @@ func (gw *Gateway) soa(state request.Request) *dns.SOA {
 
 	soa := &dns.SOA{Hdr: header,
 		Mbox:    dnsutil.Join(gw.hostmaster, gw.apex, state.Zone),
-		Ns:      dnsutil.Join("ns1", gw.apex, state.Zone),
+		Ns:      dnsutil.Join(gw.apex, state.Zone),
 		Serial:  12345, // Also dynamic?
 		Refresh: 7200,
 		Retry:   1800,
@@ -114,9 +105,31 @@ func (gw *Gateway) soa(state request.Request) *dns.SOA {
 	return soa
 }
 
-func (gw *Gateway) ns(state request.Request) *dns.NS {
+func (gw *Gateway) nameservers(state request.Request) (result []dns.RR) {
+	primaryNS := gw.ns1(state)
+	result = append(result, primaryNS)
+
+	secondaryNS := gw.ns2(state)
+	if secondaryNS != nil {
+		result = append(result, secondaryNS)
+	}
+
+	return result
+}
+
+func (gw *Gateway) ns1(state request.Request) *dns.NS {
 	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlHigh, Class: dns.ClassINET}
-	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join("ns1", gw.apex, state.Zone)}
+	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join(gw.apex, state.Zone)}
+
+	return ns
+}
+
+func (gw *Gateway) ns2(state request.Request) *dns.NS {
+	if gw.secondNS == "" { // If second NS is undefined, return nothing
+		return nil
+	}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlHigh, Class: dns.ClassINET}
+	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join(gw.secondNS, state.Zone)}
 
 	return ns
 }

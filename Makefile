@@ -1,7 +1,9 @@
 # The binary to build (just the basename).
 BIN := $(shell basename $$PWD)
 COMMIT := $(shell git describe --dirty --always)
+TAG := $(shell git describe --tags --dirty))
 LDFLAGS := "-s -w -X github.com/coredns/coredns/coremain.GitCommit=$(COMMIT)"
+ARCHS := "linux/amd64"
 
 # Where to push the docker image.
 REGISTRY ?= quay.io/oriedge
@@ -38,7 +40,7 @@ clean:
 docker: test
 	docker buildx build --push \
 		--build-arg LDFLAGS=$(LDFLAGS) \
-		--platform linux/amd64,linux/arm64 \
+		--platform ${ARCHS} \
 		-t ${IMG}:${COMMIT} \
 		.
 
@@ -47,7 +49,7 @@ docker: test
 release: test
 	docker buildx build --push \
 		--build-arg LDFLAGS=$(LDFLAGS) \
-		--platform linux/amd64,linux/arm64 \
+		--platform ${ARCHS} \
 		-t ${IMG}:latest \
 		.
 

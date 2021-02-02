@@ -35,19 +35,77 @@ kubectl apply -f https://github.com/ori-edge/k8s_gateway/blob/master/examples/in
 
 ## Configure
 
+The only required configuration option is the zone that plugin should be authoritative for:
+
 ```
-k8s_gateway [ZONE...] 
+k8s_gateway ZONE 
 ```
 
-Optionally, you can specify what kind of resources to watch, default TTL to return in response and a default name to use for zone apex, e.g.
+Additional configuration options can be used to further customize the behaviour of a plugin:
+
+```
+{
+k8s_gateway ZONE 
+    resources [RESOURCES...]
+    ttl TTL
+    apex APEX
+    secondary SECONDARY
+}
+```
+
+
+* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored.
+* `ttl` can be used to override the default TTL value of 60 seconds.
+* `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
+* `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
+
+Example: 
 
 ```
 k8s_gateway example.com {
     resources Ingress
-    ttl 10
-    apex dns1
+    ttl 30
+    apex exdns-1-k8s-gateway.kube-system
+    secondary exdns-2-k8s-gateway.kube-system
 }
 ```
+
+## Dual Nameserver Deployment
+
+Most of the time, deploying a single `k8s_gateway` instance is enough to satisfy most popular DNS resolvers. However, some of the stricter resolvers expect a zone to be available on at least two servers (RFC1034, section 4.1). In order to satisfy this requirement, a pair of `k8s_gateway` instances need to be deployed, each with its own unique loadBalancer IP. This way the zone NS record will point to a pair of glue records, hard-coded to these IPs. 
+
+Another consideration is that in this case `k8s_gateway` instances need to know about their peers in order to provide consistent responses (at least the same set of nameservers). Configuration-wise this would require the following:
+
+1. Two separate `k8s_gateway` deployments with two separate `type: LoadBalancer` services in front of them.
+2. No apex override, which would default to `releaseName.namespace`
+3. A peer nameserver's apex must be included in `secondary` configuration option
+4. Glue records must match the `releaseName.namespace.zone` of each of the running plugin
+
+For example, the above requirements could be satisfied with the following commands:
+
+1. Install two instances of `k8s_plugin` gateway pointing at each other:
+```
+helm install -n kube-system exdns-1 --set domain=zone.example.com --set secondary=exdns-2.kube-system ./charts/k8s-gateway
+helm install -n kube-system exdns-2 --set domain=zone.example.com --set secondary=exdns-1.kube-system ./charts/k8s-gateway
+```
+
+2. Obtain their external IPs
+
+```
+kubectl -n kube-system get svc -l app.kubernetes.io/name=k8s-gateway
+NAME                  TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+exdns-1-k8s-gateway   LoadBalancer   10.103.229.129   198.51.100.1  53:32122/UDP   5m22s
+exdns-2-k8s-gateway   LoadBalancer   10.107.87.145    203.0.113.11 53:30009/UDP   4m21s
+
+```
+
+3. Delegate the domain from the parent zone by creating a pair of NS records and a pair of glue records pointing to the above IPs:
+
+```
+zone.example.com (NS record) -> exdns-1-k8s-gateway.zone.example.com (A record) -> 198.51.100.1
+zone.example.com (NS record) -> exdns-2-k8s-gateway.zone.example.com (A record) -> 203.0.113.11
+```
+
 
 ## Build
 
@@ -98,9 +156,6 @@ $ dig @$ip -p 32553 test.default.foo.org +short
 192.168.1.241
 ```
 
-## Notes regarding Zone Apex and NS server resolution
-
-Due to the fact that there is not nice way to discover NS server's own IP to respond to A queries, as a wokaround, it's possible to pass the name of the LoadBalancer service used to expose the CoreDNS instance as an environment variable `EXTERNAL_SVC`. If not set, the default fallback value of `external-dns.kube-system` will be used to look up the external IP of the CoreDNS service.
 
 ## Also see
 

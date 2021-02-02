@@ -8,9 +8,6 @@ image:
 # Delegated domain
 domain: ""
 
-# Name to use for apex records
-apex: "dns"
-
 # TTL for non-apex responses (in seconds)
 ttl: 300
 
@@ -19,6 +16,12 @@ resources:
 
 # Limit what kind of resources to watch, e.g. watchedResources: ["Ingress"]
 watchedResources: []
+
+# Service name of a secondary DNS server (should be `serviceName.namespace`)
+secondaryDNS: ""
+
+# Override the default `serviceName.namespace` domain apex
+apex: ""
 
 serviceAccount:
   create: true

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 
 	"github.com/coredns/coredns/plugin"
@@ -33,8 +32,9 @@ var orderedResources = []*resourceWithIndex{
 var (
 	ttlLowDefault     = uint32(60)
 	ttlHighDefault    = uint32(3600)
-	defaultApex       = "dns"
+	defaultApex       = "dns1.kube-system"
 	defaultHostmaster = "hostmaster"
+	defaultSecondNS   = ""
 )
 
 // Gateway stores all runtime configuration of a plugin
@@ -47,6 +47,7 @@ type Gateway struct {
 	Controller       *KubeController
 	apex             string
 	hostmaster       string
+	secondNS         string
 	ExternalAddrFunc func(request.Request) []dns.RR
 }
 
@@ -56,6 +57,7 @@ func newGateway() *Gateway {
 		ttlLow:     ttlLowDefault,
 		ttlHigh:    ttlHighDefault,
 		apex:       defaultApex,
+		secondNS:   defaultSecondNS,
 		hostmaster: defaultHostmaster,
 	}
 }
@@ -151,11 +153,15 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 	switch state.QType() {
 	case dns.TypeA:
-		m.Answer = gw.A(state, addrs)
+		m.Answer = gw.A(state.Name(), addrs)
+		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+		// See https://github.com/coredns/coredns/pull/3573
+		m.Authoritative = true
 	default:
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
 
+	// If there's no match, return the SOA
 	if len(m.Answer) == 0 {
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
@@ -171,41 +177,39 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 func (gw *Gateway) Name() string { return thisPlugin }
 
 // A does the A-record lookup in ingress indexer
-func (gw *Gateway) A(state request.Request, results []net.IP) (records []dns.RR) {
+func (gw *Gateway) A(name string, results []net.IP) (records []dns.RR) {
 	dup := make(map[string]struct{})
 	for _, result := range results {
 		if _, ok := dup[result.String()]; !ok {
 			dup[result.String()] = struct{}{}
-			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: state.Name(), Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: result})
+			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: result})
 		}
 	}
 	return records
 }
 
+// SelfAddress returns the address of the local k8s_gateway service
 func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
-	// TODO: need to do self-index lookup for that i need
-	// a) my own namespace - easy
-	// b) my own serviceName - CoreDNS/k does that via localIP->Endpoint->Service
-	// I don't really want to list Endpoints just for that so will fix that later
 
-	// As a workaround I'm reading an env variable (with a default)
-	//// TODO: update docs to surface this knob
-	index := os.Getenv("EXTERNAL_SVC")
-	if index == "" {
-		index = defaultSvc
-	}
-
-	var addrs []net.IP
+	var addrs1, addrs2 []net.IP
 	for _, resource := range gw.Resources {
-		addrs = resource.lookup([]string{index})
-		if len(addrs) > 0 {
-			break
+		results := resource.lookup([]string{gw.apex})
+		if len(results) > 0 {
+			addrs1 = append(addrs1, results...)
+		}
+		results = resource.lookup([]string{gw.secondNS})
+		if len(results) > 0 {
+			addrs2 = append(addrs2, results...)
 		}
 	}
 
-	m := new(dns.Msg)
-	m.SetReply(state.Req)
-	return gw.A(state, addrs)
+	records = append(records, gw.A(state.Name(), addrs1)...)
+
+	if state.QType() == dns.TypeNS {
+		records = append(records, gw.A(gw.secondNS+"."+state.Zone, addrs2)...)
+	}
+
+	return records
 	//return records
 }
 

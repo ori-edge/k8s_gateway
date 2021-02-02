@@ -1,13 +1,10 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    # The builds triggered by a 'push' will only happen when merging to
-    # master. That's because we don't want a duplicate build on pull
-    # requests (push + pull_request events).
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   # Linting is in a separate job because golangci-lint is quite slow when

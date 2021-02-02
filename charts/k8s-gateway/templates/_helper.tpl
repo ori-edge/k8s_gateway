@@ -67,3 +67,10 @@ Create the name of the controller service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create the "name" + "." + "namespace" fqdn
+*/}}
+{{- define "k8s-gateway.fqdn" -}}
+{{- printf "%s.%s" (include "k8s-gateway.fullname" .) .Release.Namespace | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

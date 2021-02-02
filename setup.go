@@ -58,6 +58,12 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 
 		for c.NextBlock() {
 			switch c.Val() {
+			case "secondary":
+				args := c.RemainingArgs()
+				if len(args) == 0 {
+					return nil, c.ArgErr()
+				}
+				gw.secondNS = args[0]
 			case "resources":
 				args := c.RemainingArgs()
 
