@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  release:
+  gorelease:
     runs-on: ubuntu-latest
     steps:
       -
@@ -27,6 +27,7 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  docker-release:
       - 
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
