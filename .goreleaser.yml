@@ -1,0 +1,14 @@
+before:
+  hooks:
+    - go mod download
+builds:
+  - id: coredns
+    main: ./cmd/coredns.go
+    binary: coredns
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
