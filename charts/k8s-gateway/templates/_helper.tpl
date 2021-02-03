@@ -74,3 +74,14 @@ Create the "name" + "." + "namespace" fqdn
 {{- define "k8s-gateway.fqdn" -}}
 {{- printf "%s.%s" (include "k8s-gateway.fullname" .) .Release.Namespace | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create the matchable regex from domain
+*/}}
+{{- define "k8s-gateway.regex" -}}
+{{- if .Values.domain -}}
+{{- .Values.domain | replace "." "[.]" -}}
+{{- else -}}
+    {{ "unset" }}
+{{- end -}}
+{{- end -}}

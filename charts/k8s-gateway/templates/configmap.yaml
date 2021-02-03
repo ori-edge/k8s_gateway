@@ -13,6 +13,13 @@ data:
             lameduck 5s
         }
         ready
+        {{- if .Values.dnsChallenge.enabled }}
+        template IN ANY {{ required "Delegated domain ('domain') is mandatory " .Values.domain }} {
+           match "_acme-challenge[.](.*)[.]{{ include "k8s-gateway.regex" . }}"
+           answer {{ "{{" }} .Name {{ "}}" }} 5 IN CNAME {{ "{{" }}  index .Match 1 {{ "}}" }}.{{ required "DNS01 challenge domain is mandatory " .Values.dnsChallenge.domain }} "
+           fallthrough
+        }
+        {{- end }}
         k8s_gateway "{{ required "Delegated domain ('domain') is mandatory " .Values.domain }}" {
           apex {{ .Values.apex | default (include "k8s-gateway.fqdn" .) }}
           ttl {{ .Values.ttl }}

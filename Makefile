@@ -1,7 +1,7 @@
 # The binary to build (just the basename).
 BIN := $(shell basename $$PWD)
 COMMIT := $(shell git describe --dirty --always)
-TAG := $(shell git describe --tags --dirty))
+TAG := $(shell git describe --tags --dirty || echo latest)
 LDFLAGS := "-s -w -X github.com/coredns/coredns/coremain.GitCommit=$(COMMIT)"
 ARCHS := "linux/amd64"
 
@@ -45,11 +45,12 @@ docker: test
 		.
 
 
-## Release the current code with tag `latest`
+## Release the current code with git tag  and `latest`
 release: test
 	docker buildx build --push \
 		--build-arg LDFLAGS=$(LDFLAGS) \
 		--platform ${ARCHS} \
+		-t ${IMG}:${TAG} \
 		-t ${IMG}:latest \
 		.
 

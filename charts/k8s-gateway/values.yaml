@@ -23,6 +23,13 @@ secondaryDNS: ""
 # Override the default `serviceName.namespace` domain apex
 apex: ""
 
+# Optional configuration option for DNS01 challenge that will redirect all acme
+# challenge requests to external cloud domain (e.g. managed by cert-manager)
+# See: https://cert-manager.io/docs/configuration/acme/dns01/
+dnsChallenge: 
+  enabled: false
+  domain: dns01.clouddns.com
+
 serviceAccount:
   create: true
   name:
