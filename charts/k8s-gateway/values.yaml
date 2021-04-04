@@ -33,3 +33,7 @@ dnsChallenge:
 serviceAccount:
   create: true
   name:
+
+nodeSelector: {}
+
+affinity: {}
