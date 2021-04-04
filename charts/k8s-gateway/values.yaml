@@ -34,6 +34,10 @@ serviceAccount:
   create: true
   name:
 
+service:
+  type: LoadBalancer
+  port: 53
+
 nodeSelector: {}
 
 affinity: {}
