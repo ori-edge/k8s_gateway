@@ -24,7 +24,8 @@ This plugin is **NOT** supposed to be used for intra-cluster DNS resolution and 
 The recommended installation method is using the helm chart provided in the repo:
 
 ```
-helm install exdns --set domain=foo ./charts/k8s-gateway
+helm repo add k8s_gateway https://ori-edge.github.io/k8s_gateway/
+helm install exdns --set domain=foo k8s_gateway/k8s-gateway
 ```
 
 Alternatively, for labbing and testing purposes `k8s_gateway` can be deployed with a single manifest:
@@ -156,7 +157,7 @@ $ dig @$ip -p 32553 test.default.foo.org +short
 192.168.1.241
 ```
 
-
 ## Also see
 
-[Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)
+[Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)  
+[Helm repo guide](https://medium.com/@mattiaperi/create-a-public-helm-chart-repository-with-github-pages-49b180dbb417)
