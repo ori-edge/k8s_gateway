@@ -33,10 +33,13 @@ dnsChallenge:
 serviceAccount:
   create: true
   name: ""
+  annotations: {}
 
 service:
   type: LoadBalancer
   port: 53
+  # nodePort: 30053
+  # loadBalancerIP: 192.168.1.2
 
 nodeSelector: {}
 
