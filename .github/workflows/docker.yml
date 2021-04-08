@@ -27,6 +27,9 @@ jobs:
           registry: quay.io
           username: ${{ secrets.DOCKER_LOGIN }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+        if: ${{ env.DOCKER_LOGIN }}
+        env:
+            DOCKER_LOGIN: ${{ secrets.DOCKER_LOGIN }}
       - 
         name: Build and Push container images
         run: |

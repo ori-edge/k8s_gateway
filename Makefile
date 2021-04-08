@@ -37,8 +37,9 @@ clean:
 	rm -f coredns
 
 ## Build the docker image
-docker: test
-	docker buildx build --push \
+PUSH=$(if $(DOCKER_LOGIN), --push, )
+docker:
+	echo docker buildx build $(PUSH) \
 		--build-arg LDFLAGS=$(LDFLAGS) \
 		--platform ${ARCHS} \
 		-t ${IMG}:${COMMIT} \
