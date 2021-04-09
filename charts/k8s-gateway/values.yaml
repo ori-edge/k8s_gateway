@@ -12,7 +12,7 @@ domain: ""
 ttl: 300
 
 # Resources (CPU, memory etc)
-resources:
+resources: {}
 
 # Limit what kind of resources to watch, e.g. watchedResources: ["Ingress"]
 watchedResources: []
@@ -32,4 +32,15 @@ dnsChallenge:
 
 serviceAccount:
   create: true
-  name:
+  name: ""
+  annotations: {}
+
+service:
+  type: LoadBalancer
+  port: 53
+  # nodePort: 30053
+  # loadBalancerIP: 192.168.1.2
+
+nodeSelector: {}
+
+affinity: {}

@@ -10,6 +10,14 @@ metadata:
 spec:
   selector:
     {{- include "k8s-gateway.selectorLabels" . | nindent 6 }}
+  type: {{ .Values.service.type }}
   ports:
-  - {port: 53, protocol: UDP, name: udp-53}
-  type: LoadBalancer
+  - port: {{ .Values.service.port }}
+    protocol: UDP
+    name: udp-53
+    {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
+    nodePort: {{ .Values.service.nodePort }}
+    {{- end }}
+    {{- if and .Values.service.loadBalancerIP (eq .Values.service.type "LoadBalancer") }}
+    loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+    {{- end }}
