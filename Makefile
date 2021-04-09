@@ -28,6 +28,12 @@ nuke:
 build:
 	CGO_ENABLED=0 go build -ldflags $(LDFLAGS) cmd/coredns.go
 
+
+## Generate new helm package and update chart yaml file
+helm-update:
+	helm package charts/k8s-gateway
+	helm repo index --url https://ori-edge.github.io/k8s_gateway/ --merge index.yaml .
+
 .PHONY: test
 test:
 	go test -race ./... -short
