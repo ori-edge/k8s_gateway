@@ -51,6 +51,7 @@ k8s_gateway ZONE
     ttl TTL
     apex APEX
     secondary SECONDARY
+    kubeconfig KUBECONFIG [CONTEXT]
 }
 ```
 
@@ -59,6 +60,7 @@ k8s_gateway ZONE
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
+* `kubeconfig` can be used to connect to a remote Kubernetes cluster using a kubeconfig file. `CONTEXT` is optional, if not set, then the current context specified in kubeconfig will be used. It supports TLS, username and password, or token-based authentication.
 
 Example: 
 
@@ -68,6 +70,7 @@ k8s_gateway example.com {
     ttl 30
     apex exdns-1-k8s-gateway.kube-system
     secondary exdns-2-k8s-gateway.kube-system
+    kubeconfig /.kube/config
 }
 ```
 
