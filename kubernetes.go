@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	core "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -114,7 +114,7 @@ func RunKubeController(ctx context.Context) (*KubeController, error) {
 
 func ingressLister(ctx context.Context, c kubernetes.Interface, ns string) func(meta.ListOptions) (runtime.Object, error) {
 	return func(opts meta.ListOptions) (runtime.Object, error) {
-		return c.NetworkingV1beta1().Ingresses(ns).List(ctx, opts)
+		return c.NetworkingV1().Ingresses(ns).List(ctx, opts)
 	}
 }
 
@@ -126,7 +126,7 @@ func serviceLister(ctx context.Context, c kubernetes.Interface, ns string) func(
 
 func ingressWatcher(ctx context.Context, c kubernetes.Interface, ns string) func(meta.ListOptions) (watch.Interface, error) {
 	return func(opts meta.ListOptions) (watch.Interface, error) {
-		return c.NetworkingV1beta1().Ingresses(ns).Watch(ctx, opts)
+		return c.NetworkingV1().Ingresses(ns).Watch(ctx, opts)
 	}
 }
 
