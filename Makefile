@@ -1,16 +1,18 @@
+# Where to push the docker image.
+REGISTRY ?= quay.io/oriedge
+
+# Image URL to use all building/pushing image targets
+IMG ?= $(REGISTRY)/$(BIN)
+
 # The binary to build (just the basename).
 BIN := $(shell basename $$PWD)
 COMMIT := $(shell git describe --dirty --always)
 TAG := $(shell git describe --tags --dirty || echo latest)
 LDFLAGS := "-s -w -X github.com/coredns/coredns/coremain.GitCommit=$(COMMIT)"
 ARCHS := "linux/amd64,linux/arm64"
-
-# Where to push the docker image.
-REGISTRY ?= quay.io/oriedge
-
-
-# Image URL to use all building/pushing image targets
-IMG ?= $(REGISTRY)/$(BIN)
+LINUX_ARCH:=amd64 arm64
+DOCKER_IMAGE_LIST_VERSIONED:=$(shell echo $(LINUX_ARCH) | sed -e "s~[^ ]*~$(IMG):$(COMMIT)\-&~g")
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 setup:
 	-./test/kind-with-registry.sh &>/dev/null
@@ -26,7 +28,9 @@ nuke:
 
 ## Build the plugin binary
 build:
-	CGO_ENABLED=0 go build -ldflags $(LDFLAGS) cmd/coredns.go
+	for ARCH in $(LINUX_ARCH); do \
+		CGO_ENABLED=0 GOARCH=$$ARCH go build -ldflags $(LDFLAGS) -o coredns-$$ARCH cmd/coredns.go ;\
+	done
 
 
 ## Generate new helm package and update chart yaml file
@@ -43,22 +47,24 @@ clean:
 	rm -f coredns
 
 ## Build the docker image
-docker: test
-	docker buildx build --push \
-		--build-arg LDFLAGS=$(LDFLAGS) \
-		--platform ${ARCHS} \
-		-t ${IMG}:${COMMIT} \
-		.
+docker:
+	for ARCH in $(LINUX_ARCH); do \
+		docker build \
+			--build-arg ARCH=$$ARCH \
+			-t $(IMG):$(COMMIT)-$$ARCH \
+			. ;\
+	done
 
+push:
+	for ARCH in $(LINUX_ARCH); do \
+		docker push $(IMG):$(COMMIT)-$$ARCH ;\
+	done
 
-## Release the current code with git tag  and `latest`
-release: test
-	docker buildx build --push \
-		--build-arg LDFLAGS=$(LDFLAGS) \
-		--platform ${ARCHS} \
-		-t ${IMG}:${TAG} \
-		-t ${IMG}:latest \
-		.
+	docker manifest create --amend $(IMG):$(COMMIT) $(DOCKER_IMAGE_LIST_VERSIONED)
+	for ARCH in $(LINUX_ARCH); do \
+		docker manifest annotate --arch $${ARCH} $(IMG):$(COMMIT) $(IMG):$(COMMIT)-$$ARCH ;\
+	done
+	docker manifest push --purge $(IMG):$(COMMIT)
 
 # From: https://gist.github.com/klmr/575726c7e05d8780505a
 help:
