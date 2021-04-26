@@ -7,7 +7,7 @@ import (
 	"github.com/coredns/coredns/plugin/test"
 	"github.com/miekg/dns"
 	core "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
@@ -72,7 +72,7 @@ func addServices(client kubernetes.Interface) {
 func addIngresses(client kubernetes.Interface) {
 	ctx := context.TODO()
 	for _, ingress := range testIngresses {
-		_, err := client.NetworkingV1beta1().Ingresses("ns1").Create(ctx, ingress, meta.CreateOptions{})
+		_, err := client.NetworkingV1().Ingresses("ns1").Create(ctx, ingress, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create Ingress Objects :%s", err)
 		}
