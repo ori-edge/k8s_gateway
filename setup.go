@@ -26,7 +26,7 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error(thisPlugin, err)
 	}
 
-	gw.Controller, err = RunKubeController(context.Background())
+	err = gw.RunKubeController(context.Background())
 	if err != nil {
 		return plugin.Error(thisPlugin, err)
 	}
@@ -91,6 +91,15 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 					return nil, c.ArgErr()
 				}
 				gw.apex = args[0]
+			case "kubeconfig":
+				args := c.RemainingArgs()
+				if len(args) == 0 {
+					return nil, c.ArgErr()
+				}
+				gw.configFile = args[0]
+				if len(args) == 2 {
+					gw.configContext = args[1]
+				}
 			default:
 				return nil, c.Errf("Unknown property '%s'", c.Val())
 			}

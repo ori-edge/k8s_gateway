@@ -46,6 +46,8 @@ type Gateway struct {
 	apex             string
 	hostmaster       string
 	secondNS         string
+	configFile       string
+	configContext    string
 	ExternalAddrFunc func(request.Request) []dns.RR
 }
 
