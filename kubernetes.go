@@ -16,9 +16,10 @@ import (
 )
 
 const (
-	defaultResyncPeriod  = 0
-	ingressHostnameIndex = "ingressHostname"
-	serviceHostnameIndex = "serviceHostname"
+	defaultResyncPeriod   = 0
+	ingressHostnameIndex  = "ingressHostname"
+	serviceHostnameIndex  = "serviceHostname"
+	hostnameAnnotationKey = "coredns.io/hostname"
 )
 
 // KubeController stores the current runtime configuration and cache
@@ -161,6 +162,10 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	}
 
 	hostname := service.Name + "." + service.Namespace
+	if annotation, exists := service.Annotations[hostnameAnnotationKey]; exists {
+		hostname = annotation
+	}
+
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil
