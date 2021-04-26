@@ -11,7 +11,7 @@ This plugin relies on it's own connection to the k8s API server and doesn't shar
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
-| Service[*] | `name.namespace` + any of the configured zones | `.status.loadBalancer.ingress` | 
+| Service[*] | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` | 
 
 [*]: Only resolves service of type LoadBalancer
 
