@@ -1,4 +1,3 @@
-
 image:
   registry: quay.io
   repository: oriedge/k8s_gateway
@@ -26,7 +25,7 @@ apex: ""
 # Optional configuration option for DNS01 challenge that will redirect all acme
 # challenge requests to external cloud domain (e.g. managed by cert-manager)
 # See: https://cert-manager.io/docs/configuration/acme/dns01/
-dnsChallenge: 
+dnsChallenge:
   enabled: false
   domain: dns01.clouddns.com
 
@@ -40,6 +39,7 @@ service:
   port: 53
   # nodePort: 30053
   # loadBalancerIP: 192.168.1.2
+  # externalTrafficPolicy: Cluster
 
 nodeSelector: {}
 
