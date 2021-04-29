@@ -24,3 +24,7 @@ spec:
   {{- if not (empty .Values.service.externalTrafficPolicy)}}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{- end }}
+  {{- with .Values.service.externalIPs}}
+  externalIPs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
