@@ -90,42 +90,42 @@ var tests = []test.Case{
 	{
 		Qname: "svcX.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Non-existing Ingress
 	{
 		Qname: "d0main.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// SOA for the existing domain
 	{
 		Qname: "domain.example.com.", Qtype: dns.TypeSOA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Service with no public addresses
 	{
 		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Real service, wrong query type
 	{
 		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Ingress FQDN == zone
 	{
 		Qname: "example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	// Existing Ingress with a mix of lower and upper case letters
