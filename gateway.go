@@ -29,8 +29,8 @@ var orderedResources = []*resourceWithIndex{
 }
 
 var (
-	ttlLowDefault     = uint32(60)
-	ttlHighDefault    = uint32(3600)
+	ttlDefault        = uint32(60)
+	ttlSOA            = uint32(60)
 	defaultApex       = "dns1.kube-system"
 	defaultHostmaster = "hostmaster"
 	defaultSecondNS   = ""
@@ -42,7 +42,7 @@ type Gateway struct {
 	Zones            []string
 	Resources        []*resourceWithIndex
 	ttlLow           uint32
-	ttlHigh          uint32
+	ttlSOA           uint32
 	Controller       *KubeController
 	apex             string
 	hostmaster       string
@@ -57,8 +57,8 @@ type Gateway struct {
 func newGateway() *Gateway {
 	return &Gateway{
 		Resources:  orderedResources,
-		ttlLow:     ttlLowDefault,
-		ttlHigh:    ttlHighDefault,
+		ttlLow:     ttlDefault,
+		ttlSOA:     ttlSOA,
 		apex:       defaultApex,
 		secondNS:   defaultSecondNS,
 		hostmaster: defaultHostmaster,

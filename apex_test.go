@@ -49,73 +49,73 @@ var testsApex = []test.Case{
 		Qname: "example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "example.com.", Qtype: dns.TypeNS,
 		Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.NS("example.com.	3600	IN	NS	dns1.kube-system.example.com."),
+			test.NS("example.com.	60	IN	NS	dns1.kube-system.example.com."),
 		},
 		Extra: []dns.RR{
-			test.A("dns1.kube-system.example.com.	3600	IN	A	127.0.0.1"),
+			test.A("dns1.kube-system.example.com.	60	IN	A	127.0.0.1"),
 		},
 	},
 	{
 		Qname: "example.com.", Qtype: dns.TypeSRV,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "example.com.", Qtype: dns.TypeA,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeSRV,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeNS,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeA,
 		Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("dns1.kube-system.example.com.	3600	IN	A	127.0.0.1"),
+			test.A("dns1.kube-system.example.com.	60	IN	A	127.0.0.1"),
 		},
 	},
 	{
 		Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeAAAA,
 		Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 	{
 		Qname: "foo.dns1.kube-system.example.com.", Qtype: dns.TypeA,
 		Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
-			test.SOA("example.com.	3600	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
 }
