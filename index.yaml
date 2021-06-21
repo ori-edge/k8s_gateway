@@ -2,10 +2,10 @@ apiVersion: v1
 entries:
   k8s-gateway:
   - apiVersion: v2
-    appVersion: 0.1.5
-    created: "2021-04-28T17:52:32.60914273+02:00"
+    appVersion: 0.1.6
+    created: "2021-06-21T10:00:54.1126176+01:00"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
-    digest: 8a21508aa478f78cef5bc10106807c0c8f464ddcf406b9c2158ebc194af56962
+    digest: 8753d366172031ce0386c50f6857c1ac6e1f094f9ed03ad01e33f3619c6e7880
     maintainers:
     - email: michae@ori.co
       name: Michael
@@ -16,7 +16,7 @@ entries:
     version: 1.0.4
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2021-04-28T17:52:32.60893341+02:00"
+    created: "2021-06-21T10:00:54.1121569+01:00"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 2aa879712ad7ce33424b5f3477acf6a90480ba317e63dd1f343f4beac66b1c0e
     maintainers:
@@ -29,7 +29,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2021-04-28T17:52:32.60872011+02:00"
+    created: "2021-06-21T10:00:54.1117802+01:00"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 145ce2e722a9d8c95f147a5d608e00a5c47addbaeb9ea4882491e1e185c949b4
     maintainers:
@@ -42,7 +42,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2021-04-28T17:52:32.608517511+02:00"
+    created: "2021-06-21T10:00:54.1112829+01:00"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 8f780ec9b25ca9d4461c076203a7d31889499a134086df72ce26096f0eb71ce9
     maintainers:
@@ -55,7 +55,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2021-04-28T17:52:32.608308161+02:00"
+    created: "2021-06-21T10:00:54.1106589+01:00"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 2744fcdd9840590cb9f86099135229ca2fd8b3a140bcf141a3ed206191dfd3f6
     maintainers:
@@ -66,4 +66,4 @@ entries:
     urls:
     - https://ori-edge.github.io/k8s_gateway/charts/k8s-gateway-1.0.0.tgz
     version: 1.0.0
-generated: "2021-04-28T17:52:32.608016662+02:00"
+generated: "2021-06-21T10:00:54.1091339+01:00"
