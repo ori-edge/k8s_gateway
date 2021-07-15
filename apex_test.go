@@ -19,6 +19,7 @@ func TestApex(t *testing.T) {
 	gw.Next = test.NextHandler(dns.RcodeSuccess, nil)
 	gw.Controller = ctrl
 	gw.ExternalAddrFunc = selfAddressTest
+	setupEmptyLookupFuncs()
 
 	ctx := context.TODO()
 	for i, tc := range testsApex {
@@ -48,7 +49,7 @@ var testsApex = []test.Case{
 	{
 		Qname: "example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
-		Answer: []dns.RR{
+		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},

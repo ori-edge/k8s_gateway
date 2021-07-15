@@ -118,19 +118,6 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("Could not sync required resources"))
 	}
 
-	var isRootZoneQuery bool
-	for _, z := range gw.Zones {
-		if state.Name() == z { // apex query
-			isRootZoneQuery = true
-			break
-		}
-		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
-			// dns subdomain test for ns. and dns. queries
-			ret, err := gw.serveSubApex(state)
-			return ret, err
-		}
-	}
-
 	var addrs []net.IP
 
 	// Iterate over supported resources and lookup DNS queries
@@ -144,9 +131,20 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	log.Debugf("Computed response addresses %v", addrs)
 
 	// Fall through if no host matches
-	if len(addrs) == 0 {
-		if gw.Fall.Through(qname) {
-			return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
+	if len(addrs) == 0 && gw.Fall.Through(qname) {
+		return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
+	}
+
+	var isRootZoneQuery bool
+	for _, z := range gw.Zones {
+		if state.Name() == z { // apex query
+			isRootZoneQuery = true
+			break
+		}
+		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
+			// dns subdomain test for ns. and dns. queries
+			ret, err := gw.serveSubApex(state)
+			return ret, err
 		}
 	}
 
@@ -155,22 +153,32 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 	switch state.QType() {
 	case dns.TypeA:
+
 		if len(addrs) == 0 {
-			// No match, return NXDOMAIN
-			m.Rcode = dns.RcodeNameError
+
+			if !isRootZoneQuery {
+				// No match, return NXDOMAIN
+				m.Rcode = dns.RcodeNameError
+			}
+
 			m.Ns = []dns.RR{gw.soa(state)}
+
 		} else {
+
 			m.Answer = gw.A(state.Name(), addrs)
 			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 			// See https://github.com/coredns/coredns/pull/3573
 			m.Authoritative = true
 		}
 	case dns.TypeSOA:
+
 		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 		// See https://github.com/coredns/coredns/pull/3573
 		m.Authoritative = true
-		m.Answer = []dns.RR{gw.soa(state)}
+		m.Ns = []dns.RR{gw.soa(state)}
+
 	case dns.TypeNS:
+
 		if isRootZoneQuery {
 			m.Answer = gw.nameservers(state)
 
@@ -179,7 +187,10 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 				rr.Header().Ttl = gw.ttlSOA
 				m.Extra = append(m.Extra, rr)
 			}
+		} else {
+			m.Ns = []dns.RR{gw.soa(state)}
 		}
+
 	default:
 		m.Ns = []dns.RR{gw.soa(state)}
 	}

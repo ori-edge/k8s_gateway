@@ -65,77 +65,77 @@ func TestGateway(t *testing.T) {
 }
 
 var tests = []test.Case{
-	// Existing Service
+	// Existing Service | Test 0
 	{
 		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
 	},
-	// Existing Ingress
+	// Existing Ingress | Test 1
 	{
 		Qname: "domain.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.A("domain.example.com.	60	IN	A	192.0.0.1"),
 		},
 	},
-	// Ingress takes precedence over services
+	// Ingress takes precedence over services | Test 2
 	{
 		Qname: "svc2.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.A("svc2.ns1.example.com.	60	IN	A	192.0.0.2"),
 		},
 	},
-	// Non-existing Service
+	// Non-existing Service | Test 3
 	{
 		Qname: "svcX.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
-	// Non-existing Ingress
+	// Non-existing Ingress | Test 4
 	{
 		Qname: "d0main.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
-	// SOA for the existing domain
+	// SOA for the existing domain | Test 5
 	{
 		Qname: "domain.example.com.", Qtype: dns.TypeSOA, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
-	// Service with no public addresses
+	// Service with no public addresses | Test 6
 	{
 		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeNameError,
 		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
-	// Real service, wrong query type
+	// Real service, wrong query type | Test 7
 	{
-		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeNameError,
+		Qname: "svc3.ns1.example.com.", Qtype: dns.TypeCNAME, Rcode: dns.RcodeSuccess,
 		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
-	// Ingress FQDN == zone
+	// Ingress FQDN == zone | Test 8
 	{
 		Qname: "example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
-		Ns: []dns.RR{
-			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+		Answer: []dns.RR{
+			test.A("example.com.	60	IN	A	192.0.0.3"),
 		},
 	},
-	// Existing Ingress with a mix of lower and upper case letters
+	// Existing Ingress with a mix of lower and upper case letters | Test 9
 	{
 		Qname: "dOmAiN.eXamPLe.cOm.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.A("domain.example.com.	60	IN	A	192.0.0.1"),
 		},
 	},
-	// Existing Service with a mix of lower and upper case letters
+	// Existing Service with a mix of lower and upper case letters | Test 10
 	{
 		Qname: "svC1.Ns1.exAmplE.Com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
