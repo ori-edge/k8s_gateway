@@ -2,3 +2,4 @@ coredns
 tilt_modules
 .helm
 .vscode
+.idea
