@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"net"
 	"testing"
 
 	"github.com/coredns/coredns/plugin/pkg/dnstest"
@@ -10,6 +11,16 @@ import (
 
 	"github.com/miekg/dns"
 )
+
+func setupEmptyLookupFuncs() {
+
+	if resource := lookupResource("Ingress"); resource != nil {
+		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+	}
+	if resource := lookupResource("Service"); resource != nil {
+		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+	}
+}
 
 func TestDualNS(t *testing.T) {
 
@@ -20,6 +31,7 @@ func TestDualNS(t *testing.T) {
 	gw.Controller = ctrl
 	gw.ExternalAddrFunc = selfDualAddressTest
 	gw.secondNS = "dns2.kube-system"
+	setupEmptyLookupFuncs()
 
 	ctx := context.TODO()
 	for i, tc := range testsDualNS {
@@ -49,7 +61,7 @@ var testsDualNS = []test.Case{
 	{
 		Qname: "example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
-		Answer: []dns.RR{
+		Ns: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},
