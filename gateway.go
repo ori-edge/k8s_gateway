@@ -118,10 +118,10 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("Could not sync required resources"))
 	}
 
-	var is_root_zone_query bool
+	var isRootZoneQuery bool
 	for _, z := range gw.Zones {
 		if state.Name() == z { // apex query
-			is_root_zone_query = true
+			isRootZoneQuery = true
 			break
 		}
 		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
@@ -171,7 +171,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		m.Authoritative = true
 		m.Answer = []dns.RR{gw.soa(state)}
 	case dns.TypeNS:
-		if is_root_zone_query {
+		if isRootZoneQuery {
 			m.Answer = gw.nameservers(state)
 
 			addr := gw.ExternalAddrFunc(state)
