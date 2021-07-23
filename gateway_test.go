@@ -2,6 +2,8 @@ package gateway
 
 import (
 	"context"
+	"errors"
+	"github.com/coredns/coredns/plugin/pkg/fall"
 	"net"
 	"strings"
 	"testing"
@@ -11,6 +13,16 @@ import (
 
 	"github.com/miekg/dns"
 )
+
+type FallthroughCase struct {
+	test.Case
+	FallthroughZones    []string
+	FallthroughExpected bool
+}
+
+type Fallen struct {
+	error
+}
 
 func TestLookup(t *testing.T) {
 	real := []string{"Ingress", "Service"}
@@ -60,6 +72,32 @@ func TestGateway(t *testing.T) {
 		}
 		if err = test.SortAndCheck(resp, tc); err != nil {
 			t.Errorf("Test %d failed with error: %v", i, err)
+		}
+	}
+}
+
+func TestGatewayFallthrough(t *testing.T) {
+
+	ctrl := &KubeController{hasSynced: true}
+	gw := newGateway()
+	gw.Zones = []string{"example.com."}
+	gw.Next = test.NextHandler(dns.RcodeSuccess, Fallen{})
+	gw.Controller = ctrl
+	setupTestLookupFuncs()
+
+	ctx := context.TODO()
+	for i, tc := range testsFallthrough {
+		r := tc.Msg()
+		w := dnstest.NewRecorder(&test.ResponseWriter{})
+
+		gw.Fall = fall.F{Zones: tc.FallthroughZones}
+		_, err := gw.ServeDNS(ctx, w, r)
+
+		if errors.As(err, &Fallen{}) && !tc.FallthroughExpected {
+			t.Fatalf("Test %d query resulted unexpectidly in a fall through instead of a response", i)
+		}
+		if err == nil && tc.FallthroughExpected {
+			t.Fatalf("Test %d query resulted unexpectidly in a response instead of a fall through", i)
 		}
 	}
 }
@@ -141,6 +179,34 @@ var tests = []test.Case{
 		Answer: []dns.RR{
 			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
+	},
+}
+
+var testsFallthrough = []FallthroughCase{
+	// Match found, fallthrough enabled | Test 0
+	{
+		Case:             test.Case{Qname: "example.com.", Qtype: dns.TypeA},
+		FallthroughZones: []string{"."}, FallthroughExpected: false,
+	},
+	// No match found, fallthrough enabled | Test 1
+	{
+		Case:             test.Case{Qname: "non-existent.example.com.", Qtype: dns.TypeA},
+		FallthroughZones: []string{"."}, FallthroughExpected: true,
+	},
+	// Match found, fallthrough for different zone | Test 2
+	{
+		Case:             test.Case{Qname: "example.com.", Qtype: dns.TypeA},
+		FallthroughZones: []string{"not-example.com."}, FallthroughExpected: false,
+	},
+	// No match found, fallthrough for different zone | Test 3
+	{
+		Case:             test.Case{Qname: "non-existent.example.com.", Qtype: dns.TypeA},
+		FallthroughZones: []string{"not-example.com."}, FallthroughExpected: false,
+	},
+	// No fallthrough on gw apex | Test 4
+	{
+		Case:             test.Case{Qname: "dns1.kube-system.example.com.", Qtype: dns.TypeA},
+		FallthroughZones: []string{"."}, FallthroughExpected: false,
 	},
 }
 
