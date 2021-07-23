@@ -118,6 +118,19 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("Could not sync required resources"))
 	}
 
+	var isRootZoneQuery bool
+	for _, z := range gw.Zones {
+		if state.Name() == z { // apex query
+			isRootZoneQuery = true
+			break
+		}
+		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
+			// dns subdomain test for ns. and dns. queries
+			ret, err := gw.serveSubApex(state)
+			return ret, err
+		}
+	}
+
 	var addrs []net.IP
 
 	// Iterate over supported resources and lookup DNS queries
@@ -133,19 +146,6 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	// Fall through if no host matches
 	if len(addrs) == 0 && gw.Fall.Through(qname) {
 		return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
-	}
-
-	var isRootZoneQuery bool
-	for _, z := range gw.Zones {
-		if state.Name() == z { // apex query
-			isRootZoneQuery = true
-			break
-		}
-		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
-			// dns subdomain test for ns. and dns. queries
-			ret, err := gw.serveSubApex(state)
-			return ret, err
-		}
 	}
 
 	m := new(dns.Msg)
