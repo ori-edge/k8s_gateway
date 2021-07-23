@@ -7,34 +7,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-// serveApex serves request that hit the zone' apex. A reply is written back to the client.
-func (gw *Gateway) serveApex(state request.Request) (int, error) {
-	m := new(dns.Msg)
-	m.SetReply(state.Req)
-	switch state.QType() {
-	case dns.TypeSOA:
-		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
-		// See https://github.com/coredns/coredns/pull/3573
-		m.Authoritative = true
-		m.Answer = []dns.RR{gw.soa(state)}
-	case dns.TypeNS:
-		m.Answer = gw.nameservers(state)
-
-		addr := gw.ExternalAddrFunc(state)
-		for _, rr := range addr {
-			rr.Header().Ttl = gw.ttlSOA
-			m.Extra = append(m.Extra, rr)
-		}
-	default:
-		m.Ns = []dns.RR{gw.soa(state)}
-	}
-
-	if err := state.W.WriteMsg(m); err != nil {
-		log.Errorf("Failed to send a response: %s", err)
-	}
-	return 0, nil
-}
-
 // serveSubApex serves requests that hit the zones fake 'dns' subdomain where our nameservers live.
 func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 	base, _ := dnsutil.TrimZone(state.Name(), state.Zone)

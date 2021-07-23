@@ -118,10 +118,11 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("Could not sync required resources"))
 	}
 
+	var isRootZoneQuery bool
 	for _, z := range gw.Zones {
 		if state.Name() == z { // apex query
-			ret, err := gw.serveApex(state)
-			return ret, err
+			isRootZoneQuery = true
+			break
 		}
 		if dns.IsSubDomain(gw.apex+"."+z, state.Name()) {
 			// dns subdomain test for ns. and dns. queries
@@ -142,39 +143,55 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	}
 	log.Debugf("Computed response addresses %v", addrs)
 
+	// Fall through if no host matches
+	if len(addrs) == 0 && gw.Fall.Through(qname) {
+		return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
+	}
+
 	m := new(dns.Msg)
 	m.SetReply(state.Req)
 
-	// If there's no match, fall through or return NXDOMAIN
-	if len(addrs) == 0 {
-		if gw.Fall.Through(qname) {
-			return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
-		}
-
-		m.Rcode = dns.RcodeNameError
-		m.Ns = []dns.RR{gw.soa(state)}
-		if err := w.WriteMsg(m); err != nil {
-			log.Errorf("Failed to send a response: %s", err)
-		}
-		return 0, nil
-	}
-
 	switch state.QType() {
 	case dns.TypeA:
-		m.Answer = gw.A(state.Name(), addrs)
+
+		if len(addrs) == 0 {
+
+			if !isRootZoneQuery {
+				// No match, return NXDOMAIN
+				m.Rcode = dns.RcodeNameError
+			}
+
+			m.Ns = []dns.RR{gw.soa(state)}
+
+		} else {
+
+			m.Answer = gw.A(state.Name(), addrs)
+			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+			// See https://github.com/coredns/coredns/pull/3573
+			m.Authoritative = true
+		}
+	case dns.TypeSOA:
+
 		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 		// See https://github.com/coredns/coredns/pull/3573
 		m.Authoritative = true
-	default:
 		m.Ns = []dns.RR{gw.soa(state)}
-	}
 
-	// If there's no match, fall through or return the SOA
-	if len(m.Answer) == 0 {
-		if gw.Fall.Through(qname) {
-			return plugin.NextOrFailure(gw.Name(), gw.Next, ctx, w, r)
+	case dns.TypeNS:
+
+		if isRootZoneQuery {
+			m.Answer = gw.nameservers(state)
+
+			addr := gw.ExternalAddrFunc(state)
+			for _, rr := range addr {
+				rr.Header().Ttl = gw.ttlSOA
+				m.Extra = append(m.Extra, rr)
+			}
+		} else {
+			m.Ns = []dns.RR{gw.soa(state)}
 		}
 
+	default:
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
 
