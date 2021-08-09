@@ -17,7 +17,7 @@ resources: {}
 watchedResources: []
 
 # Service name of a secondary DNS server (should be `serviceName.namespace`)
-secondaryDNS: ""
+secondary: ""
 
 # Override the default `serviceName.namespace` domain apex
 apex: ""
