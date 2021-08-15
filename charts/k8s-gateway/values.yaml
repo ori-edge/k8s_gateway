@@ -1,7 +1,7 @@
 image:
   registry: quay.io
   repository: oriedge/k8s_gateway
-  tag: v0.1.6
+  tag: v0.1.8
   pullPolicy: IfNotPresent
 
 # Delegated domain
