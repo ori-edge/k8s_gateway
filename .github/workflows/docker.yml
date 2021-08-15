@@ -8,7 +8,7 @@ jobs:
   docker:
     strategy:
         matrix:
-          go-version: [1.15.x]
+          go-version: [1.16.x]
           os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
