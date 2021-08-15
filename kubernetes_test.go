@@ -151,6 +151,25 @@ var testServices = map[string]*core.Service{
 			},
 		},
 	},
+	"annotation": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "svc3",
+			Namespace: "ns1",
+			Annotations: map[string]string{
+				"coredns.io/hostname": "annotation",
+			},
+		},
+		Spec: core.ServiceSpec{
+			Type: core.ServiceTypeLoadBalancer,
+		},
+		Status: core.ServiceStatus{
+			LoadBalancer: core.LoadBalancerStatus{
+				Ingress: []core.LoadBalancerIngress{
+					{IP: "192.0.0.3"},
+				},
+			},
+		},
+	},
 }
 
 var testBadServices = map[string]*core.Service{

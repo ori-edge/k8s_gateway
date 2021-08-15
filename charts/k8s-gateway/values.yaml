@@ -1,8 +1,7 @@
-
 image:
   registry: quay.io
   repository: oriedge/k8s_gateway
-  tag: latest
+  tag: v0.1.6
   pullPolicy: IfNotPresent
 
 # Delegated domain
@@ -18,7 +17,7 @@ resources: {}
 watchedResources: []
 
 # Service name of a secondary DNS server (should be `serviceName.namespace`)
-secondaryDNS: ""
+secondary: ""
 
 # Override the default `serviceName.namespace` domain apex
 apex: ""
@@ -26,7 +25,7 @@ apex: ""
 # Optional configuration option for DNS01 challenge that will redirect all acme
 # challenge requests to external cloud domain (e.g. managed by cert-manager)
 # See: https://cert-manager.io/docs/configuration/acme/dns01/
-dnsChallenge: 
+dnsChallenge:
   enabled: false
   domain: dns01.clouddns.com
 
@@ -40,6 +39,9 @@ service:
   port: 53
   # nodePort: 30053
   # loadBalancerIP: 192.168.1.2
+  # externalTrafficPolicy: Local
+  # externalIPs: 
+  #  - 192.168.1.3
 
 nodeSelector: {}
 

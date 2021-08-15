@@ -11,7 +11,7 @@ This plugin relies on it's own connection to the k8s API server and doesn't shar
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
-| Service[*] | `name.namespace` + any of the configured zones | `.status.loadBalancer.ingress` | 
+| Service[*] | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` | 
 
 [*]: Only resolves service of type LoadBalancer
 
@@ -51,6 +51,8 @@ k8s_gateway ZONE
     ttl TTL
     apex APEX
     secondary SECONDARY
+    kubeconfig KUBECONFIG [CONTEXT]
+    fallthrough [ZONES...]
 }
 ```
 
@@ -59,6 +61,8 @@ k8s_gateway ZONE
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
+* `kubeconfig` can be used to connect to a remote Kubernetes cluster using a kubeconfig file. `CONTEXT` is optional, if not set, then the current context specified in kubeconfig will be used. It supports TLS, username and password, or token-based authentication.
+* `fallthrough` if zone matches and no record can be generated, pass request to the next plugin. If **[ZONES...]** is omitted, then fallthrough happens for all zones for which the plugin is authoritative. If specific zones are listed (for example `in-addr.arpa` and `ip6.arpa`), then only queries for those zones will be subject to fallthrough.
 
 Example: 
 
@@ -68,6 +72,7 @@ k8s_gateway example.com {
     ttl 30
     apex exdns-1-k8s-gateway.kube-system
     secondary exdns-2-k8s-gateway.kube-system
+    kubeconfig /.kube/config
 }
 ```
 
