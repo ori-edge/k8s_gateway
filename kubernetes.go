@@ -13,12 +13,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
-	defaultResyncPeriod  = 0
-	ingressHostnameIndex = "ingressHostname"
-	serviceHostnameIndex = "serviceHostname"
+	defaultResyncPeriod   = 0
+	ingressHostnameIndex  = "ingressHostname"
+	serviceHostnameIndex  = "serviceHostname"
+	hostnameAnnotationKey = "coredns.io/hostname"
 )
 
 // KubeController stores the current runtime configuration and cache
@@ -93,23 +95,38 @@ func (ctrl *KubeController) HasSynced() bool {
 }
 
 // RunKubeController kicks off the k8s controllers
-func RunKubeController(ctx context.Context) (*KubeController, error) {
-	config, err := rest.InClusterConfig()
+func (gw *Gateway) RunKubeController(ctx context.Context) error {
+	config, err := gw.getClientConfig()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	kubeClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	ctrl := newKubeController(ctx, kubeClient)
+	gw.Controller = newKubeController(ctx, kubeClient)
+	go gw.Controller.run()
 
-	go ctrl.run()
+	return nil
 
-	return ctrl, nil
+}
 
+func (gw *Gateway) getClientConfig() (*rest.Config, error) {
+	if gw.configFile != "" {
+		overrides := &clientcmd.ConfigOverrides{}
+		overrides.CurrentContext = gw.configContext
+
+		config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: gw.configFile},
+			overrides,
+		)
+
+		return config.ClientConfig()
+	}
+
+	return rest.InClusterConfig()
 }
 
 func ingressLister(ctx context.Context, c kubernetes.Interface, ns string) func(meta.ListOptions) (runtime.Object, error) {
@@ -161,6 +178,10 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	}
 
 	hostname := service.Name + "." + service.Namespace
+	if annotation, exists := service.Annotations[hostnameAnnotationKey]; exists {
+		hostname = annotation
+	}
+
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil

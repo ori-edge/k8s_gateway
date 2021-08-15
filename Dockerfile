@@ -14,7 +14,15 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY *.go ./
 
-RUN CGO_ENABLED=0 GOOS=linux GO111MODULE=on go build -ldflags "${LDFLAGS}" -o coredns cmd/coredns.go
+ARG TARGETOS
+ARG TARGETARCH
+
+ENV CGO_ENABLED=0
+ENV GO111MODULE=on
+ENV GOARCH=$TARGETARCH
+ENV GOOS=$TARGETOS
+
+RUN go build -ldflags "${LDFLAGS}" -o coredns cmd/coredns.go
 
 FROM debian:stable-slim
 

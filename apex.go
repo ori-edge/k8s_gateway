@@ -7,34 +7,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-// serveApex serves request that hit the zone' apex. A reply is written back to the client.
-func (gw *Gateway) serveApex(state request.Request) (int, error) {
-	m := new(dns.Msg)
-	m.SetReply(state.Req)
-	switch state.QType() {
-	case dns.TypeSOA:
-		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
-		// See https://github.com/coredns/coredns/pull/3573
-		m.Authoritative = true
-		m.Answer = []dns.RR{gw.soa(state)}
-	case dns.TypeNS:
-		m.Answer = gw.nameservers(state)
-
-		addr := gw.ExternalAddrFunc(state)
-		for _, rr := range addr {
-			rr.Header().Ttl = gw.ttlHigh
-			m.Extra = append(m.Extra, rr)
-		}
-	default:
-		m.Ns = []dns.RR{gw.soa(state)}
-	}
-
-	if err := state.W.WriteMsg(m); err != nil {
-		log.Errorf("Failed to send a response: %s", err)
-	}
-	return 0, nil
-}
-
 // serveSubApex serves requests that hit the zones fake 'dns' subdomain where our nameservers live.
 func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 	base, _ := dnsutil.TrimZone(state.Name(), state.Zone)
@@ -64,7 +36,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 
 		addr := gw.ExternalAddrFunc(state)
 		for _, rr := range addr {
-			rr.Header().Ttl = gw.ttlHigh
+			rr.Header().Ttl = gw.ttlSOA
 			rr.Header().Name = state.QName()
 			switch state.QType() {
 			case dns.TypeA:
@@ -91,7 +63,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 }
 
 func (gw *Gateway) soa(state request.Request) *dns.SOA {
-	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeSOA, Ttl: gw.ttlHigh, Class: dns.ClassINET}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeSOA, Ttl: gw.ttlSOA, Class: dns.ClassINET}
 
 	soa := &dns.SOA{Hdr: header,
 		Mbox:    dnsutil.Join(gw.hostmaster, gw.apex, state.Zone),
@@ -100,7 +72,7 @@ func (gw *Gateway) soa(state request.Request) *dns.SOA {
 		Refresh: 7200,
 		Retry:   1800,
 		Expire:  86400,
-		Minttl:  gw.ttlHigh,
+		Minttl:  gw.ttlSOA,
 	}
 	return soa
 }
@@ -118,7 +90,7 @@ func (gw *Gateway) nameservers(state request.Request) (result []dns.RR) {
 }
 
 func (gw *Gateway) ns1(state request.Request) *dns.NS {
-	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlHigh, Class: dns.ClassINET}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlSOA, Class: dns.ClassINET}
 	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join(gw.apex, state.Zone)}
 
 	return ns
@@ -128,7 +100,7 @@ func (gw *Gateway) ns2(state request.Request) *dns.NS {
 	if gw.secondNS == "" { // If second NS is undefined, return nothing
 		return nil
 	}
-	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlHigh, Class: dns.ClassINET}
+	header := dns.RR_Header{Name: state.Zone, Rrtype: dns.TypeNS, Ttl: gw.ttlSOA, Class: dns.ClassINET}
 	ns := &dns.NS{Hdr: header, Ns: dnsutil.Join(gw.secondNS, state.Zone)}
 
 	return ns

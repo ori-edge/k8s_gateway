@@ -23,6 +23,9 @@ data:
         k8s_gateway "{{ required "Delegated domain ('domain') is mandatory " .Values.domain }}" {
           apex {{ .Values.apex | default (include "k8s-gateway.fqdn" .) }}
           ttl {{ .Values.ttl }}
+          {{- if .Values.secondary }}
+          secondary {{ .Values.secondary }}
+          {{- end }}
           {{- if .Values.watchedResources }}
           resources {{ join " " .Values.watchedResources }}
           {{- end }}
