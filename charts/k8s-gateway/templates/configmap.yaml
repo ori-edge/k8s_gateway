@@ -34,4 +34,7 @@ data:
         loop
         reload
         loadbalance
+        {{- if .Values.extraZonePlugins -}}
+        {{- .Values.extraZonePlugins | nindent 8 }}
+        {{- end }}
     }

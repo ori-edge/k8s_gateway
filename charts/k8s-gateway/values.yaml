@@ -29,6 +29,9 @@ dnsChallenge:
   enabled: false
   domain: dns01.clouddns.com
 
+# Optional plugins that will be enabled in the zone, e.g. "forward . /etc/resolve.conf"
+extraZonePlugins: ""
+
 serviceAccount:
   create: true
   name: ""
@@ -40,7 +43,7 @@ service:
   # nodePort: 30053
   # loadBalancerIP: 192.168.1.2
   # externalTrafficPolicy: Local
-  # externalIPs: 
+  # externalIPs:
   #  - 192.168.1.3
 
 nodeSelector: {}
