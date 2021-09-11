@@ -20,13 +20,15 @@ spec:
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
+        securityContext:
+          runAsUser: 1000
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         ports:
-        - {containerPort: 53, protocol: UDP, name: udp-53}
+        - {containerPort: 1053, protocol: UDP, name: dns-udp}
         livenessProbe:
           httpGet:
             path: /health

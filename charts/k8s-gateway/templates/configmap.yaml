@@ -6,7 +6,7 @@ metadata:
     {{- include "k8s-gateway.labels" . | nindent 4 }}
 data:
   Corefile: |-
-    .:53 {
+    .:1053 {
         errors
         log
         health {

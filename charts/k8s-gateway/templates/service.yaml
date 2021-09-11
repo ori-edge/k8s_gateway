@@ -17,8 +17,8 @@ spec:
   ports:
   - port: {{ .Values.service.port }}
     protocol: UDP
-    name: udp-53
-    targetPort: udp-53
+    name: dns-udp
+    targetPort: dns-udp
     {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
     nodePort: {{ .Values.service.nodePort }}
     {{- end }}
