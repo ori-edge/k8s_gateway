@@ -49,3 +49,5 @@ service:
 nodeSelector: {}
 
 affinity: {}
+
+replicaCount: 1

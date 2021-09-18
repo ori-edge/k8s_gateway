@@ -27,3 +27,4 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `service.type`                   | The type of service to create (`LoadBalancer`, `NodePort`)                                | `LoadBalancer`        |
 | `service.nodePort`               | Node port when service type is `NodePort`. Randomly chonsen by Kubernetes if not provided |                       |
 | `service.loadBalancerIP`         | The IP address to use when using serviceType `LoadBalancer`                               |                       |
+| `replicaCount`                   | Number of replicas                                                                        | `1`                   |
