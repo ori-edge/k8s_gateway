@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "k8s-gateway.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "k8s-gateway.selectorLabels" . | nindent 6 }}
