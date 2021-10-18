@@ -40,6 +40,7 @@ serviceAccount:
 service:
   type: LoadBalancer
   port: 53
+  annotations: {}
   # nodePort: 30053
   # loadBalancerIP: 192.168.1.2
   # externalTrafficPolicy: Local
