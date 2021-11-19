@@ -31,7 +31,7 @@ helm install exdns --set domain=foo k8s_gateway/k8s-gateway
 Alternatively, for labbing and testing purposes `k8s_gateway` can be deployed with a single manifest:
 
 ```
-kubectl apply -f https://github.com/ori-edge/k8s_gateway/blob/master/examples/install-clusterwide.yml
+kubectl apply -f https://raw.githubusercontent.com/ori-edge/k8s_gateway/master/examples/install-clusterwide.yml
 ```
 
 ## Configure
