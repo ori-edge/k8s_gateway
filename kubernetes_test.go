@@ -142,14 +142,14 @@ var testIngresses = map[string]*networking.Ingress{
 }
 
 var testIstioGateways = map[string]*istioNetworkingv1beta1.Gateway{
-	"a.example.org": {
+	"istio.example.org": {
 		ObjectMeta: meta.ObjectMeta{
 			Name:      "gateway1",
 			Namespace: "istions1",
 		},
 		Spec: v1beta1.Gateway{Servers: []*v1beta1.Server{{
 			Port:  &v1beta1.Port{Number: 80, Name: "http", Protocol: "http", TargetPort: 80},
-			Hosts: []string{"a.example.org"},
+			Hosts: []string{"istio.example.org"},
 		}}},
 		Status: v1alpha1.IstioStatus{},
 	},

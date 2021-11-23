@@ -21,6 +21,9 @@ type resourceWithIndex struct {
 
 var orderedResources = []*resourceWithIndex{
 	{
+		name: "Gateway",
+	},
+	{
 		name: "Ingress",
 	},
 	{
@@ -239,7 +242,6 @@ func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 	}
 
 	return records
-	//return records
 }
 
 // Strips the zone from FQDN and return a hostname

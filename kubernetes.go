@@ -189,7 +189,14 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 }
 
 func istioGatewayHostnameIndexFunc(gateway *istioNetworkingv1beta1.Gateway) ([]string, error) {
-	panic("unimplemented")
+	var hostnames []string
+	for _, server := range gateway.Spec.Servers {
+		for _, host := range server.Hosts {
+			log.Debugf("Adding index %s for gateway %s", host, server.Name)
+			hostnames = append(hostnames, host)
+		}
+	}
+	return hostnames, nil
 }
 
 func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {

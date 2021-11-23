@@ -20,6 +20,9 @@ func setupEmptyLookupFuncs() {
 	if resource := lookupResource("Service"); resource != nil {
 		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
 	}
+	if resource := lookupResource("Gateway"); resource != nil {
+		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+	}
 }
 
 func TestDualNS(t *testing.T) {

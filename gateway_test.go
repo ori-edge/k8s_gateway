@@ -26,8 +26,8 @@ type Fallen struct {
 }
 
 func TestLookup(t *testing.T) {
-	real := []string{"Ingress", "Service"}
-	fake := []string{"Gateway", "Pod"}
+	real := []string{"Ingress", "Service", "Gateway"}
+	fake := []string{"Pod"}
 
 	for _, resource := range real {
 		if found := lookupResource(resource); found == nil {
@@ -182,6 +182,20 @@ var tests = []test.Case{
 			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
 	},
+	// Existing Istio Gateway with a mix of lower and upper case letters | Test 11
+	{
+		Qname: "istiO.istioNs1.exAmplE.Com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("istio.istions1.example.com.	60	IN	A	192.0.0.2"),
+		},
+	},
+	// Existing Istio Gateway | Test 12
+	{
+		Qname: "istio.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("istio.example.com.	60	IN	A	192.0.0.1"),
+		},
+	},
 }
 
 var testsFallthrough = []FallthroughCase{
@@ -231,9 +245,21 @@ var testIngressIndexes = map[string][]net.IP{
 	"example.com":          {net.ParseIP("192.0.0.3")},
 }
 
+var testGatewayIndexes = map[string][]net.IP{
+	"istio.example.com":          {net.ParseIP("192.0.0.1")},
+	"istio.istions1.example.com": {net.ParseIP("192.0.0.2")},
+}
+
 func testIngressLookup(keys []string) (results []net.IP) {
 	for _, key := range keys {
 		results = append(results, testIngressIndexes[strings.ToLower(key)]...)
+	}
+	return results
+}
+
+func testGatewayLookup(keys []string) (results []net.IP) {
+	for _, key := range keys {
+		results = append(results, testGatewayIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
@@ -244,5 +270,8 @@ func setupTestLookupFuncs() {
 	}
 	if resource := lookupResource("Service"); resource != nil {
 		resource.lookup = testServiceLookup
+	}
+	if resource := lookupResource("Gateway"); resource != nil {
+		resource.lookup = testGatewayLookup
 	}
 }
