@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	istioNetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -185,6 +186,10 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil
+}
+
+func istioGatewayHostnameIndexFunc(gateway *istioNetworkingv1beta1.Gateway) ([]string, error) {
+	panic("unimplemented")
 }
 
 func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {

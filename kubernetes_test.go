@@ -11,16 +11,23 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+
+	"istio.io/api/meta/v1alpha1"
+	"istio.io/api/networking/v1beta1"
+	istioNetworkingv1beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
+	istio "istio.io/client-go/pkg/clientset/versioned/fake"
 )
 
 func TestController(t *testing.T) {
 	client := fake.NewSimpleClientset()
+	istioClient := istio.NewSimpleClientset()
 	ctrl := &KubeController{
 		client:    client,
 		hasSynced: true,
 	}
 	addServices(client)
 	addIngresses(client)
+	addIstioGateways(istioClient)
 
 	gw := newGateway()
 	gw.Zones = []string{"example.com."}
@@ -48,6 +55,22 @@ func TestController(t *testing.T) {
 		}
 	}
 
+	for index, testObj := range testIstioGateways {
+		found, _ := istioGatewayHostnameIndexFunc(testObj)
+		if !isFound(index, found) {
+			t.Errorf("Istio Gatewat key %s not found in index: %v", index, found)
+		}
+	}
+}
+
+func addIstioGateways(istioClient *istio.Clientset) {
+	ctx := context.TODO()
+	for _, gateway := range testIstioGateways {
+		_, err := istioClient.NetworkingV1beta1().Gateways("istions1").Create(ctx, gateway, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create Istio Gateway Objects :%s", err)
+		}
+	}
 }
 
 func isFound(s string, ss []string) bool {
@@ -115,6 +138,20 @@ var testIngresses = map[string]*networking.Ingress{
 				},
 			},
 		},
+	},
+}
+
+var testIstioGateways = map[string]*istioNetworkingv1beta1.Gateway{
+	"a.example.org": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "gateway1",
+			Namespace: "istions1",
+		},
+		Spec: v1beta1.Gateway{Servers: []*v1beta1.Server{{
+			Port:  &v1beta1.Port{Number: 80, Name: "http", Protocol: "http", TargetPort: 80},
+			Hosts: []string{"a.example.org"},
+		}}},
+		Status: v1alpha1.IstioStatus{},
 	},
 }
 
