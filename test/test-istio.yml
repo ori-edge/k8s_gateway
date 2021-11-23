@@ -1,0 +1,73 @@
+# Test Istio Gateway
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: gateway-istio-test
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "istio.example.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vs-istio-test
+spec:
+  hosts:
+  - "istio.example.com"
+  gateways:
+  - gateway-istio-test
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: 80
+        host: istio-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-istio-test
+  labels:
+    app: istio-test
+spec:
+  selector:
+    matchLabels:
+      app: istio-test
+  template:
+    metadata:
+      labels:
+        app: istio-test
+    spec:
+      containers:
+      - image: nginx:stable-alpine
+        imagePullPolicy: Always
+        name: nginx
+        resources:
+          limits:
+            memory: "50Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-test
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: istio-test
