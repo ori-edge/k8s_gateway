@@ -52,3 +52,6 @@ nodeSelector: {}
 affinity: {}
 
 replicaCount: 1
+
+# Optional PriorityClass that will be used in the Deployment, e.g. priorityClassName: "system-cluster-critical"
+priorityClassName: ""
