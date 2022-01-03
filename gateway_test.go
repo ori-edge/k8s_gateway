@@ -26,8 +26,8 @@ type Fallen struct {
 }
 
 func TestLookup(t *testing.T) {
-	real := []string{"Ingress", "Service"}
-	fake := []string{"Gateway", "Pod"}
+	real := []string{"Ingress", "Service", "HTTPRoute"}
+	fake := []string{"Pod"}
 
 	for _, resource := range real {
 		if found := lookupResource(resource); found == nil {

@@ -14,6 +14,9 @@ import (
 
 func setupEmptyLookupFuncs() {
 
+	if resource := lookupResource("HTTPRoute"); resource != nil {
+		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+	}
 	if resource := lookupResource("Ingress"); resource != nil {
 		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
 	}

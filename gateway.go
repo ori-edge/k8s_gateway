@@ -21,6 +21,9 @@ type resourceWithIndex struct {
 
 var orderedResources = []*resourceWithIndex{
 	{
+		name: "HTTPRoute",
+	},
+	{
 		name: "Ingress",
 	},
 	{
