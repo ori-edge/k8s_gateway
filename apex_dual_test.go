@@ -61,7 +61,7 @@ var testsDualNS = []test.Case{
 	{
 		Qname: "example.com.", Qtype: dns.TypeSOA,
 		Rcode: dns.RcodeSuccess,
-		Ns: []dns.RR{
+		Answer: []dns.RR{
 			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
 		},
 	},

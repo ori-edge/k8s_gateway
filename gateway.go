@@ -175,7 +175,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 		// See https://github.com/coredns/coredns/pull/3573
 		m.Authoritative = true
-		m.Ns = []dns.RR{gw.soa(state)}
+		m.Answer = []dns.RR{gw.soa(state)}
 
 	case dns.TypeNS:
 
