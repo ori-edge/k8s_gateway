@@ -33,15 +33,13 @@ type KubeController struct {
 	hasSynced   bool
 }
 
-func newKubeController(ctx context.Context, c *kubernetes.Clientset) *KubeController {
+func newKubeController(ctx context.Context, c *kubernetes.Clientset, nc *k8s_nginx.Clientset) *KubeController {
 
 	log.Infof("Starting k8s_gateway controller")
 
 	ctrl := &KubeController{
 		client: c,
 	}
-
-	nginxV1Client := k8s_nginx.New(c.RESTClient())
 
 	if resource := lookupResource("Ingress"); resource != nil {
 		ingressController := cache.NewSharedIndexInformer(
@@ -74,8 +72,8 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset) *KubeContro
 	if resource := lookupResource("VirtualServer"); resource != nil {
 		virtualServerController := cache.NewSharedIndexInformer(
 			&cache.ListWatch{
-				ListFunc:  virtualServerLister(ctx, nginxV1Client, core.NamespaceAll),
-				WatchFunc: virtualServerWatcher(ctx, nginxV1Client, core.NamespaceAll),
+				ListFunc:  virtualServerLister(ctx, nc, core.NamespaceAll),
+				WatchFunc: virtualServerWatcher(ctx, nc, core.NamespaceAll),
 			},
 			&nginx_v1.VirtualServer{},
 			defaultResyncPeriod,
@@ -125,7 +123,12 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 		return err
 	}
 
-	gw.Controller = newKubeController(ctx, kubeClient)
+	nginxClient, err := k8s_nginx.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	gw.Controller = newKubeController(ctx, kubeClient, nginxClient)
 	go gw.Controller.run()
 
 	return nil
