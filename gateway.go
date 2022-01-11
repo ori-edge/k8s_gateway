@@ -26,6 +26,9 @@ var orderedResources = []*resourceWithIndex{
 	{
 		name: "Service",
 	},
+	{
+		name: "VirtualServer",
+	},
 }
 
 var (
