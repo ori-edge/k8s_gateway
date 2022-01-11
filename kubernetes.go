@@ -5,6 +5,8 @@ import (
 	"net"
 	"strings"
 
+	nginx_v1 "github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/v1"
+	k8s_nginx "github.com/nginxinc/kubernetes-ingress/pkg/client/clientset/versioned"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,10 +19,11 @@ import (
 )
 
 const (
-	defaultResyncPeriod   = 0
-	ingressHostnameIndex  = "ingressHostname"
-	serviceHostnameIndex  = "serviceHostname"
-	hostnameAnnotationKey = "coredns.io/hostname"
+	defaultResyncPeriod         = 0
+	ingressHostnameIndex        = "ingressHostname"
+	serviceHostnameIndex        = "serviceHostname"
+	virtualServiceHostnameIndex = "virtualServiceHostname"
+	hostnameAnnotationKey       = "coredns.io/hostname"
 )
 
 // KubeController stores the current runtime configuration and cache
@@ -37,6 +40,8 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset) *KubeContro
 	ctrl := &KubeController{
 		client: c,
 	}
+
+	nginxV1Client := k8s_nginx.New(c.RESTClient())
 
 	if resource := lookupResource("Ingress"); resource != nil {
 		ingressController := cache.NewSharedIndexInformer(
@@ -64,6 +69,20 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset) *KubeContro
 		)
 		resource.lookup = lookupServiceIndex(serviceController)
 		ctrl.controllers = append(ctrl.controllers, serviceController)
+	}
+
+	if resource := lookupResource("VirtualService"); resource != nil {
+		virtualServiceController := cache.NewSharedIndexInformer(
+			&cache.ListWatch{
+				ListFunc:  virtualServiceLister(ctx, nginxV1Client, core.NamespaceAll),
+				WatchFunc: virtualServiceWatcher(ctx, nginxV1Client, core.NamespaceAll),
+			},
+			&nginx_v1.VirtualServer{},
+			defaultResyncPeriod,
+			cache.Indexers{virtualServiceHostnameIndex: virtualServiceHostnameIndexFunc},
+		)
+		resource.lookup = lookupVirtualServiceIndex(virtualServiceController)
+		ctrl.controllers = append(ctrl.controllers, virtualServiceController)
 	}
 
 	return ctrl
@@ -141,6 +160,12 @@ func serviceLister(ctx context.Context, c kubernetes.Interface, ns string) func(
 	}
 }
 
+func virtualServiceLister(ctx context.Context, c k8s_nginx.Interface, ns string) func(meta.ListOptions) (runtime.Object, error) {
+	return func(opts meta.ListOptions) (runtime.Object, error) {
+		return c.K8sV1().VirtualServers(ns).List(ctx, opts)
+	}
+}
+
 func ingressWatcher(ctx context.Context, c kubernetes.Interface, ns string) func(meta.ListOptions) (watch.Interface, error) {
 	return func(opts meta.ListOptions) (watch.Interface, error) {
 		return c.NetworkingV1().Ingresses(ns).Watch(ctx, opts)
@@ -150,6 +175,12 @@ func ingressWatcher(ctx context.Context, c kubernetes.Interface, ns string) func
 func serviceWatcher(ctx context.Context, c kubernetes.Interface, ns string) func(meta.ListOptions) (watch.Interface, error) {
 	return func(opts meta.ListOptions) (watch.Interface, error) {
 		return c.CoreV1().Services(ns).Watch(ctx, opts)
+	}
+}
+
+func virtualServiceWatcher(ctx context.Context, c k8s_nginx.Interface, ns string) func(meta.ListOptions) (watch.Interface, error) {
+	return func(opts meta.ListOptions) (watch.Interface, error) {
+		return c.K8sV1().VirtualServers(ns).Watch(ctx, opts)
 	}
 }
 
@@ -187,6 +218,15 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	return []string{hostname}, nil
 }
 
+func virtualServiceHostnameIndexFunc(obj interface{}) ([]string, error) {
+	virtualServer, ok := obj.(*nginx_v1.VirtualServer)
+	if !ok {
+		return []string{}, nil
+	}
+
+	return []string{virtualServer.Spec.Host}, nil
+}
+
 func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {
 	return func(indexKeys []string) (result []net.IP) {
 		var objs []interface{}
@@ -199,6 +239,25 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 			service, _ := obj.(*core.Service)
 
 			result = append(result, fetchLoadBalancerIPs(service.Status.LoadBalancer)...)
+		}
+		return
+	}
+}
+
+func lookupVirtualServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {
+	return func(indexKeys []string) (result []net.IP) {
+		var objs []interface{}
+		for _, key := range indexKeys {
+			obj, _ := ctrl.GetIndexer().ByIndex(virtualServiceHostnameIndex, strings.ToLower(key))
+			objs = append(objs, obj...)
+		}
+		log.Debugf("Found %d matching VirtualService objects", len(objs))
+		for _, obj := range objs {
+			virtualServer, _ := obj.(*nginx_v1.VirtualServer)
+
+			for _, endpoint := range virtualServer.Status.ExternalEndpoints {
+				result = append(result, net.ParseIP(endpoint.IP))
+			}
 		}
 		return
 	}

@@ -18,6 +18,7 @@ docker_build_with_restart(IMG, '.',
 
 
 k8s_kind("kind")
+k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
 
 # CoreDNS with updated RBAC
 k8s_yaml('./test/kubernetes.yaml')
