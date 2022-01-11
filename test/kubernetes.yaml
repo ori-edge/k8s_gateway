@@ -15,6 +15,7 @@ data:
   Corefile: |-
     .:53 {
         errors
+        debug
         log
         ready
         k8s_gateway foo.org
