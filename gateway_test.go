@@ -26,7 +26,7 @@ type Fallen struct {
 }
 
 func TestLookup(t *testing.T) {
-	real := []string{"Ingress", "Service"}
+	real := []string{"Ingress", "Service", "VirtualServer"}
 	fake := []string{"Gateway", "Pod"}
 
 	for _, resource := range real {
@@ -182,6 +182,13 @@ var tests = []test.Case{
 			test.A("svc1.ns1.example.com.	60	IN	A	192.0.1.1"),
 		},
 	},
+	// Existing VirtualServer | Test 11
+	{
+		Qname: "vs1.example.com", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("vs1.example.com.	60	IN	A	192.0.0.1"),
+		},
+	},
 }
 
 var testsFallthrough = []FallthroughCase{
@@ -238,11 +245,25 @@ func testIngressLookup(keys []string) (results []net.IP) {
 	return results
 }
 
+var testVirtualServerIndexes = map[string][]net.IP{
+	"vs1.example.com": {net.ParseIP("192.0.0.1")},
+}
+
+func testVirtualServerLookup(keys []string) (results []net.IP) {
+	for _, key := range keys {
+		results = append(results, testVirtualServerIndexes[strings.ToLower(key)]...)
+	}
+	return results
+}
+
 func setupTestLookupFuncs() {
 	if resource := lookupResource("Ingress"); resource != nil {
 		resource.lookup = testIngressLookup
 	}
 	if resource := lookupResource("Service"); resource != nil {
 		resource.lookup = testServiceLookup
+	}
+	if resource := lookupResource("VirtualServer"); resource != nil {
+		resource.lookup = testVirtualServerLookup
 	}
 }
