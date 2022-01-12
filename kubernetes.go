@@ -29,6 +29,7 @@ const (
 // KubeController stores the current runtime configuration and cache
 type KubeController struct {
 	client      kubernetes.Interface
+	nginxClient k8s_nginx.Interface
 	controllers []cache.SharedIndexInformer
 	hasSynced   bool
 }
@@ -38,7 +39,8 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, nc *k8s_ngi
 	log.Infof("Starting k8s_gateway controller")
 
 	ctrl := &KubeController{
-		client: c,
+		client:      c,
+		nginxClient: nc,
 	}
 
 	if resource := lookupResource("Ingress"); resource != nil {
@@ -72,8 +74,8 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, nc *k8s_ngi
 	if resource := lookupResource("VirtualServer"); resource != nil {
 		virtualServerController := cache.NewSharedIndexInformer(
 			&cache.ListWatch{
-				ListFunc:  virtualServerLister(ctx, nc, core.NamespaceAll),
-				WatchFunc: virtualServerWatcher(ctx, nc, core.NamespaceAll),
+				ListFunc:  virtualServerLister(ctx, ctrl.nginxClient, core.NamespaceAll),
+				WatchFunc: virtualServerWatcher(ctx, ctrl.nginxClient, core.NamespaceAll),
 			},
 			&nginx_v1.VirtualServer{},
 			defaultResyncPeriod,
