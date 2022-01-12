@@ -18,7 +18,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	"sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned"
+	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned"
 )
 
 const (
@@ -33,12 +33,12 @@ const (
 // KubeController stores the current runtime configuration and cache
 type KubeController struct {
 	client      kubernetes.Interface
-	gwClient    versioned.Interface
+	gwClient    gatewayClient.Interface
 	controllers []cache.SharedIndexInformer
 	hasSynced   bool
 }
 
-func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *versioned.Clientset) *KubeController {
+func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gatewayClient.Clientset) *KubeController {
 
 	log.Infof("Building k8s_gateway controller")
 
@@ -144,7 +144,7 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 		return err
 	}
 
-	gwAPIClient, err := versioned.NewForConfig(config)
+	gwAPIClient, err := gatewayClient.NewForConfig(config)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 
 }
 
-func checkGatewayCRDs(ctx context.Context, c *versioned.Clientset) bool {
+func checkGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
 
 	_, err := c.GatewayV1alpha2().Gateways("").List(ctx, metav1.ListOptions{})
 	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
@@ -185,13 +185,13 @@ func (gw *Gateway) getClientConfig() (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func httpRouteLister(ctx context.Context, c versioned.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
+func httpRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
 		return c.GatewayV1alpha2().HTTPRoutes(ns).List(ctx, opts)
 	}
 }
 
-func gatewayLister(ctx context.Context, c versioned.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
+func gatewayLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
 		return c.GatewayV1alpha2().Gateways(ns).List(ctx, opts)
 	}
@@ -209,13 +209,13 @@ func serviceLister(ctx context.Context, c kubernetes.Interface, ns string) func(
 	}
 }
 
-func httpRouteWatcher(ctx context.Context, c versioned.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
+func httpRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
 		return c.GatewayV1alpha2().HTTPRoutes(ns).Watch(ctx, opts)
 	}
 }
 
-func gatewayWatcher(ctx context.Context, c versioned.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
+func gatewayWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
 		return c.GatewayV1alpha2().Gateways(ns).Watch(ctx, opts)
 	}

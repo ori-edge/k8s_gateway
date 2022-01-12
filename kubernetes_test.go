@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	"sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned"
+	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned"
 	gwFake "sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned/fake"
 )
 
@@ -99,7 +99,7 @@ func addIngresses(client kubernetes.Interface) {
 	}
 }
 
-func addGateways(client versioned.Interface) {
+func addGateways(client gatewayClient.Interface) {
 	ctx := context.TODO()
 	for _, gw := range testGateways {
 		_, err := client.GatewayV1alpha2().Gateways("ns1").Create(ctx, gw, meta.CreateOptions{})
@@ -109,7 +109,7 @@ func addGateways(client versioned.Interface) {
 	}
 }
 
-func addHTTPRoutes(client versioned.Interface) {
+func addHTTPRoutes(client gatewayClient.Interface) {
 	ctx := context.TODO()
 	for _, r := range testHTTPRoutes {
 		_, err := client.GatewayV1alpha2().HTTPRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
