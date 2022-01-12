@@ -29,6 +29,6 @@ k8s_yaml('./test/ingress.yaml')
 k8s_yaml('./test/metallb.yaml')
 
 # Gateway API
-k8s_yaml('./test/gateway-api/crds.yml')
-k8s_yaml('./test/gateway-api/istio.yml')
-k8s_yaml('./test/gateway-api/resources.yml')
+#k8s_yaml('./test/gateway-api/crds.yml')
+#k8s_yaml('./test/gateway-api/istio.yml')
+#k8s_yaml('./test/gateway-api/resources.yml')
