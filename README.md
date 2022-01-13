@@ -19,7 +19,7 @@ This plugin relies on it's own connection to the k8s API server and doesn't shar
 <a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.4.0.</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
-<a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 2.1.0</br>
+<a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
 
 Currently only supports A-type queries, all other queries result in NODATA responses.
 
