@@ -47,7 +47,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		gwClient: gw,
 	}
 
-	if checkGatewayCRDs(ctx, gw) {
+	if existGatewayCRDs(ctx, gw) {
 		if resource := lookupResource("HTTPRoute"); resource != nil {
 			gatewayController := cache.NewSharedIndexInformer(
 				&cache.ListWatch{
@@ -156,7 +156,7 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 
 }
 
-func checkGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
+func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
 
 	_, err := c.GatewayV1alpha2().Gateways("").List(ctx, metav1.ListOptions{})
 	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
