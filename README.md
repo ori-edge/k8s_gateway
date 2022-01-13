@@ -1,6 +1,6 @@
 # k8s_gateway
 
-A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and `networking.x-k8s.io/Gateway` (when it becomes available). 
+A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and HTTPRoutes from the [Gateway API project](https://gateway-api.sigs.k8s.io/). 
 
 This plugin relies on it's own connection to the k8s API server and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
 
@@ -10,10 +10,14 @@ This plugin relies on it's own connection to the k8s API server and doesn't shar
 
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
+| HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
-| Service[*] | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` | 
+| Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` | 
 
-[*]: Only resolves service of type LoadBalancer
+
+<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.4.0.</br>
+<a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute.</br>
+<a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
 
 Currently only supports A-type queries, all other queries result in NODATA responses.
 
@@ -57,7 +61,7 @@ k8s_gateway ZONE
 ```
 
 
-* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored.
+* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute ]`.
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
@@ -140,7 +144,13 @@ For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compi
 
 ## Hack
 
-This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To setup a local environment do:
+This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To build a local k8s cluster with kind run:
+
+```
+make setup
+```
+
+To bind up a tilt development enviornment do:
 
 ```
 make up
@@ -149,7 +159,11 @@ make up
 Some test resources can be added to the k8s cluster with:
 
 ```
+# ingress and service resources
 kubectl apply -f ./test/test.yml
+
+# gateway API resources
+kubectl apply -f ./test/gateway-api/resources.yml
 ```
 
 Test queries can be sent to the exposed CoreDNS service like this:
@@ -160,6 +174,12 @@ $ dig @$ip -p 32553 myservicea.foo.org +short
 172.18.0.2
 $ dig @$ip -p 32553 test.default.foo.org +short
 192.168.1.241
+```
+
+To cleanup local environment do:
+
+```
+make nuke
 ```
 
 ## Also see
