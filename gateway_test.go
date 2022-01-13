@@ -186,17 +186,24 @@ var tests = []test.Case{
 	{
 		Qname: "vs1.example.com", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
-			test.A("vs1.example.com.	60	IN	A	192.0.0.1"),
+			test.A("vs1.example.com.	60	IN	A	192.0.3.1"),
 		},
 	},
-	// basic gateway API lookup
+	// VirtualServer lookup priority over Ingress | Test 12
+	{
+		Qname: "shadow-vs.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.A("shadow-vs.example.com.	60	IN	A	192.0.3.5"),
+		},
+	},
+	// basic gateway API lookup | Test 13
 	{
 		Qname: "domain.gw.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
 			test.A("domain.gw.example.com.	60	IN	A	192.0.2.1"),
 		},
 	},
-	// gateway API lookup priority over Ingress
+	// gateway API lookup priority over Ingress and VirtualServers | Test 14
 	{
 		Qname: "shadow.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
@@ -247,10 +254,11 @@ func testServiceLookup(keys []string) (results []net.IP) {
 }
 
 var testIngressIndexes = map[string][]net.IP{
-	"domain.example.com":   {net.ParseIP("192.0.0.1")},
-	"svc2.ns1.example.com": {net.ParseIP("192.0.0.2")},
-	"example.com":          {net.ParseIP("192.0.0.3")},
-	"shadow.example.com":   {net.ParseIP("192.0.0.4")},
+	"domain.example.com":    {net.ParseIP("192.0.0.1")},
+	"svc2.ns1.example.com":  {net.ParseIP("192.0.0.2")},
+	"example.com":           {net.ParseIP("192.0.0.3")},
+	"shadow.example.com":    {net.ParseIP("192.0.0.4")},
+	"shadow-vs.example.com": {net.ParseIP("192.0.0.5")},
 }
 
 func testIngressLookup(keys []string) (results []net.IP) {
@@ -261,7 +269,9 @@ func testIngressLookup(keys []string) (results []net.IP) {
 }
 
 var testVirtualServerIndexes = map[string][]net.IP{
-	"vs1.example.com": {net.ParseIP("192.0.0.1")},
+	"vs1.example.com":       {net.ParseIP("192.0.3.1")},
+	"shadow.example.com":    {net.ParseIP("192.0.3.4")},
+	"shadow-vs.example.com": {net.ParseIP("192.0.3.5")},
 }
 
 func testVirtualServerLookup(keys []string) (results []net.IP) {

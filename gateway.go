@@ -24,13 +24,13 @@ var orderedResources = []*resourceWithIndex{
 		name: "HTTPRoute",
 	},
 	{
+		name: "VirtualServer",
+	},
+	{
 		name: "Ingress",
 	},
 	{
 		name: "Service",
-	},
-	{
-		name: "VirtualServer",
 	},
 }
 
