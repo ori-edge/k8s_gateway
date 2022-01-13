@@ -166,6 +166,12 @@ $ dig @$ip -p 32553 test.default.foo.org +short
 192.168.1.241
 ```
 
+To cleanup local environment do:
+
+```
+make nuke
+```
+
 ## Also see
 
 [Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)  
