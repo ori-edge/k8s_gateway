@@ -144,7 +144,13 @@ For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compi
 
 ## Hack
 
-This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To setup a local environment do:
+This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To build a local k8s cluster with kind run:
+
+```
+make setup
+```
+
+To bind up a tilt development enviornment do:
 
 ```
 make up
@@ -153,7 +159,11 @@ make up
 Some test resources can be added to the k8s cluster with:
 
 ```
+# ingress and service resources
 kubectl apply -f ./test/test.yml
+
+# gateway API resources
+kubectl apply -f ./test/gateway-api/resources.yml
 ```
 
 Test queries can be sent to the exposed CoreDNS service like this:
