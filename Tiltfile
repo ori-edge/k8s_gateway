@@ -18,7 +18,6 @@ docker_build_with_restart(IMG, '.',
 
 
 k8s_kind("kind")
-k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
 
 # CoreDNS with updated RBAC
 k8s_yaml('./test/kubernetes.yaml')
@@ -28,3 +27,7 @@ k8s_yaml('./test/ingress.yaml')
 
 # Metallb
 k8s_yaml('./test/metallb.yaml')
+
+# Nginxinc kubernetes-ingress
+# k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
+# k8s_yaml('./test/test-resources.yaml')
