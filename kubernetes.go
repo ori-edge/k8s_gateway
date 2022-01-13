@@ -79,6 +79,22 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		}
 	}
 
+	if existVirtualServerCRDs(ctx, nc) {
+		if resource := lookupResource("VirtualServer"); resource != nil {
+			virtualServerController := cache.NewSharedIndexInformer(
+				&cache.ListWatch{
+					ListFunc:  virtualServerLister(ctx, ctrl.nginxClient, core.NamespaceAll),
+					WatchFunc: virtualServerWatcher(ctx, ctrl.nginxClient, core.NamespaceAll),
+				},
+				&nginx_v1.VirtualServer{},
+				defaultResyncPeriod,
+				cache.Indexers{virtualServerHostnameIndex: virtualServerHostnameIndexFunc},
+			)
+			resource.lookup = lookupVirtualServerIndex(virtualServerController)
+			ctrl.controllers = append(ctrl.controllers, virtualServerController)
+		}
+	}
+
 	if resource := lookupResource("Ingress"); resource != nil {
 		ingressController := cache.NewSharedIndexInformer(
 			&cache.ListWatch{
@@ -105,20 +121,6 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		)
 		resource.lookup = lookupServiceIndex(serviceController)
 		ctrl.controllers = append(ctrl.controllers, serviceController)
-	}
-
-	if resource := lookupResource("VirtualServer"); resource != nil {
-		virtualServerController := cache.NewSharedIndexInformer(
-			&cache.ListWatch{
-				ListFunc:  virtualServerLister(ctx, ctrl.nginxClient, core.NamespaceAll),
-				WatchFunc: virtualServerWatcher(ctx, ctrl.nginxClient, core.NamespaceAll),
-			},
-			&nginx_v1.VirtualServer{},
-			defaultResyncPeriod,
-			cache.Indexers{virtualServerHostnameIndex: virtualServerHostnameIndexFunc},
-		)
-		resource.lookup = lookupVirtualServerIndex(virtualServerController)
-		ctrl.controllers = append(ctrl.controllers, virtualServerController)
 	}
 
 	return ctrl
@@ -193,6 +195,18 @@ func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
 	panic(err)
 }
 
+func existVirtualServerCRDs(ctx context.Context, c *k8s_nginx.Clientset) bool {
+	_, err := c.K8sV1().VirtualServers("").List(ctx, metav1.ListOptions{})
+	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
+		log.Infof("VirtualServer CRDs are not found. Not syncing VirtualServer resources.")
+		return false
+	}
+	if err == nil {
+		return true
+	}
+	panic(err)
+}
+
 func (gw *Gateway) getClientConfig() (*rest.Config, error) {
 	if gw.configFile != "" {
 		overrides := &clientcmd.ConfigOverrides{}
@@ -233,8 +247,8 @@ func serviceLister(ctx context.Context, c kubernetes.Interface, ns string) func(
 	}
 }
 
-func virtualServerLister(ctx context.Context, c k8s_nginx.Interface, ns string) func(meta.ListOptions) (runtime.Object, error) {
-	return func(opts meta.ListOptions) (runtime.Object, error) {
+func virtualServerLister(ctx context.Context, c k8s_nginx.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
+	return func(opts metav1.ListOptions) (runtime.Object, error) {
 		return c.K8sV1().VirtualServers(ns).List(ctx, opts)
 	}
 }
@@ -263,8 +277,8 @@ func serviceWatcher(ctx context.Context, c kubernetes.Interface, ns string) func
 	}
 }
 
-func virtualServerWatcher(ctx context.Context, c k8s_nginx.Interface, ns string) func(meta.ListOptions) (watch.Interface, error) {
-	return func(opts meta.ListOptions) (watch.Interface, error) {
+func virtualServerWatcher(ctx context.Context, c k8s_nginx.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
+	return func(opts metav1.ListOptions) (watch.Interface, error) {
 		return c.K8sV1().VirtualServers(ns).Watch(ctx, opts)
 	}
 }
@@ -369,6 +383,7 @@ func lookupVirtualServerIndex(ctrl cache.SharedIndexInformer) func([]string) []n
 				result = append(result, net.ParseIP(endpoint.IP))
 			}
 		}
+		return
 	}
 }
 
