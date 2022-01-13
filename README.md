@@ -12,12 +12,14 @@ This plugin relies on it's own connection to the k8s API server and doesn't shar
 | ---- | ---------------- | -------- |
 | HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
-| Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` | 
+| Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/kubernetes_test.go#L159) for an example) | `.status.loadBalancer.ingress` |
+| VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 
 <a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.4.0.</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
+<a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 2.1.0</br>
 
 Currently only supports A-type queries, all other queries result in NODATA responses.
 
@@ -61,7 +63,7 @@ k8s_gateway ZONE
 ```
 
 
-* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute ]`.
+* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute | VirtualServer ]`.
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
