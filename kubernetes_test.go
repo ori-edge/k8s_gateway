@@ -14,18 +14,25 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
+	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned"
+	gwFake "sigs.k8s.io/gateway-api/pkg/client/clientset/gateway/versioned/fake"
 )
 
 func TestController(t *testing.T) {
 	client := fake.NewSimpleClientset()
+	gwClient := gwFake.NewSimpleClientset()
 	nginxClient := k8s_nginx_fake.NewSimpleClientset()
 	ctrl := &KubeController{
 		client:      client,
+		gwClient:    gwClient,
 		nginxClient: nginxClient,
 		hasSynced:   true,
 	}
 	addServices(client)
 	addIngresses(client)
+	addGateways(gwClient)
+	addHTTPRoutes(gwClient)
 	addVirtualServers(nginxClient)
 
 	gw := newGateway()
@@ -61,6 +68,19 @@ func TestController(t *testing.T) {
 		}
 	}
 
+	for index, testObj := range testHTTPRoutes {
+		found, _ := httpRouteHostnameIndexFunc(testObj)
+		if !isFound(index, found) {
+			t.Errorf("HTTPRoute key %s not found in index: %v", index, found)
+		}
+	}
+
+	for index, testObj := range testGateways {
+		found, _ := gatewayIndexFunc(testObj)
+		if !isFound(index, found) {
+			t.Errorf("Gateway key %s not found in index: %v", index, found)
+		}
+	}
 }
 
 func isFound(s string, ss []string) bool {
@@ -98,6 +118,26 @@ func addVirtualServers(client k8s_nginx.Interface) {
 		_, err := client.K8sV1().VirtualServers("ns1").Create(ctx, virtualServer, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create VirtualServer Objects :%s", err)
+		}
+	}
+}
+
+func addGateways(client gatewayClient.Interface) {
+	ctx := context.TODO()
+	for _, gw := range testGateways {
+		_, err := client.GatewayV1alpha2().Gateways("ns1").Create(ctx, gw, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create a Gateway Object :%s", err)
+		}
+	}
+}
+
+func addHTTPRoutes(client gatewayClient.Interface) {
+	ctx := context.TODO()
+	for _, r := range testHTTPRoutes {
+		_, err := client.GatewayV1alpha2().HTTPRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create a HTTPRoute Object :%s", err)
 		}
 	}
 }
@@ -208,6 +248,42 @@ var testVirtualServers = map[string]*nginx.VirtualServer{
 			ExternalEndpoints: []nginx.ExternalEndpoint{
 				{IP: "192.0.0.1"},
 			},
+		},
+	},
+}
+
+var testGateways = map[string]*gatewayapi_v1alpha2.Gateway{
+	"ns1/gw-1": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "gw-1",
+			Namespace: "ns1",
+		},
+		Spec: gatewayapi_v1alpha2.GatewaySpec{},
+		Status: gatewayapi_v1alpha2.GatewayStatus{
+			Addresses: []gatewayapi_v1alpha2.GatewayAddress{
+				{
+					Value: "192.0.2.100",
+				},
+			},
+		},
+	},
+	"ns1/gw-2": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "gw-2",
+			Namespace: "ns1",
+		},
+	},
+}
+
+var testHTTPRoutes = map[string]*gatewayapi_v1alpha2.HTTPRoute{
+	"route-1.gw-1.example.com": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "route-1",
+			Namespace: "ns1",
+		},
+		Spec: gatewayapi_v1alpha2.HTTPRouteSpec{
+			//ParentRefs: []gatewayapi_v1alpha2.ParentRef{},
+			Hostnames: []gatewayapi_v1alpha2.Hostname{"route-1.gw-1.example.com"},
 		},
 	},
 }

@@ -13,16 +13,16 @@ REGISTRY ?= quay.io/oriedge
 IMG ?= $(REGISTRY)/$(BIN)
 
 setup:
-	-./test/kind-with-registry.sh &>/dev/null
+	./test/kind-with-registry.sh 
 
-up: setup
+up: 
 	tilt up
 
 down:
 	tilt down
 
 nuke: 
-	-./test/teardown-kind-with-registry.sh &>/dev/null
+	./test/teardown-kind-with-registry.sh 
 
 ## Build the plugin binary
 build:
