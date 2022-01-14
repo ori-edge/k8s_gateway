@@ -10,9 +10,12 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: myservicea
-          servicePort: 80
+          service:
+            name: ingress
+            port: 
+              number: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -25,9 +28,12 @@ spec:
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: ingress
-          servicePort: 80
+          service:
+            name: ingress
+            port: 
+              number: 80
 ---
 apiVersion: apps/v1
 kind: Deployment

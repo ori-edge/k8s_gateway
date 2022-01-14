@@ -20,7 +20,14 @@ docker_build_with_restart(IMG, '.',
 k8s_kind("kind")
 
 # CoreDNS with updated RBAC
-k8s_yaml('./test/kubernetes.yaml')
+#k8s_yaml('./test/kubernetes.yaml')
+k8s_yaml(helm(
+    './charts/k8s-gateway',
+    namespace="kube-system",
+    name='helm',
+    values=['./test/helm-values.yaml'],
+    )
+)
 
 # Baremetal ingress controller (nodeport-based)
 k8s_yaml('./test/ingress.yaml')
