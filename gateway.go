@@ -19,15 +19,20 @@ type resourceWithIndex struct {
 	lookup lookupFunc
 }
 
+var noop lookupFunc = func([]string) (result []net.IP) { return }
+
 var orderedResources = []*resourceWithIndex{
 	{
-		name: "HTTPRoute",
+		name:   "HTTPRoute",
+		lookup: noop,
 	},
 	{
-		name: "Ingress",
+		name:   "Ingress",
+		lookup: noop,
 	},
 	{
-		name: "Service",
+		name:   "Service",
+		lookup: noop,
 	},
 }
 
