@@ -173,9 +173,14 @@ Test queries can be sent to the exposed CoreDNS service like this:
 ```
 $ ip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
 $ dig @$ip -p 32553 myservicea.foo.org +short
-172.18.0.2
+192.168.224.2
 $ dig @$ip -p 32553 test.default.foo.org +short
-192.168.1.241
+192.168.223.129
+$ dig @$ip -p 32553 myservicea.gw.foo.org +short
+192.168.223.130
+$ dig @$ip -p 32553 myserviced.gw.foo.org +short
+192.168.223.130
+192.168.223.131
 ```
 
 To cleanup local environment do:

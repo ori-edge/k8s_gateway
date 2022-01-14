@@ -1,7 +1,7 @@
 image:
   registry: quay.io
   repository: oriedge/k8s_gateway
-  tag: v0.1.8
+  tag: v0.2.1
   pullPolicy: IfNotPresent
 
 # Delegated domain
@@ -55,3 +55,6 @@ replicaCount: 1
 
 # Optional PriorityClass that will be used in the Deployment, e.g. priorityClassName: "system-cluster-critical"
 priorityClassName: ""
+
+debug:
+  enabled: false
