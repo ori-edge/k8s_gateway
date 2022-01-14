@@ -2,8 +2,21 @@ apiVersion: v1
 entries:
   k8s-gateway:
   - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2022-01-14T11:12:45.5088678Z"
+    description: A Helm chart for the k8s_gateway CoreDNS plugin
+    digest: a6946aa35fed1b67ab968d282cc0cbbbb3136c6781563df7496b78e6e88ca8e1
+    maintainers:
+    - email: mmkashin@gmail.com
+      name: Michael
+    name: k8s-gateway
+    type: application
+    urls:
+    - https://ori-edge.github.io/k8s_gateway/charts/k8s-gateway-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
     appVersion: 0.2.0
-    created: "2022-01-13T16:49:24.5393117Z"
+    created: "2022-01-14T11:12:45.5081359Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 74abb009602b062b805dbd96fb07cbd4c725e8dee7cd980bab0149fba1030c3a
     maintainers:
@@ -16,7 +29,7 @@ entries:
     version: 1.1.0
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5336178Z"
+    created: "2022-01-14T11:12:45.5040903Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: df847a43e164794eb49a0d4d2d81657dd4043524862f369ae995b2b70ecbb105
     maintainers:
@@ -29,7 +42,7 @@ entries:
     version: 1.0.12
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5328819Z"
+    created: "2022-01-14T11:12:45.5035526Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 2d1fe6ac3011d03642a77ddaa3cbe9cc7a99f19226f33f4ae18ca0d413155c0e
     maintainers:
@@ -42,7 +55,7 @@ entries:
     version: 1.0.11
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5321583Z"
+    created: "2022-01-14T11:12:45.5030846Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 796c8f7636ef4f33c43afb0ef947817ba4caa1ace29de3d903ee2fc831fd3edf
     maintainers:
@@ -55,7 +68,7 @@ entries:
     version: 1.0.10
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5389458Z"
+    created: "2022-01-14T11:12:45.5077263Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 8d194587b8f31ed6230b2b2fcb2215f3f52e0be1a8ff754007b5a94731b7bcfb
     maintainers:
@@ -68,7 +81,7 @@ entries:
     version: 1.0.9
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5383056Z"
+    created: "2022-01-14T11:12:45.5073246Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 8edd4edd05d76253b81ecfaafab51f171fa725bd81b6b26fef81efa26e9374d7
     maintainers:
@@ -81,7 +94,7 @@ entries:
     version: 1.0.8
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5377035Z"
+    created: "2022-01-14T11:12:45.5069236Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: f162c5063236777b2cc238a03162e39ac2b2bbea46e0c31c6ae01eb88d9ce5c9
     maintainers:
@@ -94,7 +107,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 0.1.8
-    created: "2022-01-13T16:49:24.5370703Z"
+    created: "2022-01-14T11:12:45.5064801Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: cb09166912e10c092c0f15ff5aee21e5f6a57d5ffc02047695991d0f7fc019d6
     maintainers:
@@ -107,7 +120,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 0.1.7
-    created: "2022-01-13T16:49:24.5363123Z"
+    created: "2022-01-14T11:12:45.5060625Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 4941bcbfc5d054cf958befda1a65a2e32773aaddd59af4b2f9420353465f0be4
     maintainers:
@@ -120,7 +133,7 @@ entries:
     version: 1.0.5
   - apiVersion: v2
     appVersion: 0.1.6
-    created: "2022-01-13T16:49:24.5357363Z"
+    created: "2022-01-14T11:12:45.5055271Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 8753d366172031ce0386c50f6857c1ac6e1f094f9ed03ad01e33f3619c6e7880
     maintainers:
@@ -133,7 +146,7 @@ entries:
     version: 1.0.4
   - apiVersion: v2
     appVersion: 0.1.5
-    created: "2022-01-13T16:49:24.5350515Z"
+    created: "2022-01-14T11:12:45.5049886Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 2aa879712ad7ce33424b5f3477acf6a90480ba317e63dd1f343f4beac66b1c0e
     maintainers:
@@ -146,7 +159,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2022-01-13T16:49:24.5344325Z"
+    created: "2022-01-14T11:12:45.5045285Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 145ce2e722a9d8c95f147a5d608e00a5c47addbaeb9ea4882491e1e185c949b4
     maintainers:
@@ -159,7 +172,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 0.1.4
-    created: "2022-01-13T16:49:24.5313994Z"
+    created: "2022-01-14T11:12:45.5021065Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 8f780ec9b25ca9d4461c076203a7d31889499a134086df72ce26096f0eb71ce9
     maintainers:
@@ -172,7 +185,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2022-01-13T16:49:24.5305291Z"
+    created: "2022-01-14T11:12:45.5014592Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 2744fcdd9840590cb9f86099135229ca2fd8b3a140bcf141a3ed206191dfd3f6
     maintainers:
@@ -183,4 +196,4 @@ entries:
     urls:
     - https://ori-edge.github.io/k8s_gateway/charts/k8s-gateway-1.0.0.tgz
     version: 1.0.0
-generated: "2022-01-13T16:49:24.5300044Z"
+generated: "2022-01-14T11:12:45.4901627Z"
