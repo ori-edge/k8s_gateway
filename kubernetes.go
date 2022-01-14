@@ -206,6 +206,10 @@ func existVirtualServerCRDs(ctx context.Context, c *k8s_nginx.Clientset) bool {
 		log.Infof("VirtualServer CRDs are not found. Not syncing VirtualServer resources.")
 		return false
 	}
+	if apierrors.IsForbidden(err) {
+		log.Infof("access to `k8s.nginx.org/v1` is forbidden, please check RBAC. Not syncing VirtualServer resources.")
+		return false
+	}
 	if err == nil {
 		return true
 	}
