@@ -9,6 +9,7 @@ import (
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -161,6 +162,10 @@ func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
 	_, err := c.GatewayV1alpha2().Gateways("").List(ctx, metav1.ListOptions{})
 	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
 		log.Infof("GatewayAPI CRDs are not found. Not syncing GatewayAPI resources.")
+		return false
+	}
+	if apierrors.IsForbidden(err) {
+		log.Infof("access to `gateway.networking.k8s.io` is forbidden, please check RBAC. Not syncing GatewayAPI resources.")
 		return false
 	}
 	if err == nil {
