@@ -1,4 +1,5 @@
 load('ext://restart_process', 'docker_build_with_restart')
+load('ext://helm_remote', 'helm_remote')
 
 IMG = 'localhost:5000/coredns'
 
@@ -24,16 +25,27 @@ k8s_kind("kind")
 k8s_yaml(helm(
     './charts/k8s-gateway',
     namespace="kube-system",
-    name='helm',
-    values=['./test/helm-values.yaml'],
+    name='excoredns',
+    values=['./test/k8s-gateway-values.yaml'],
     )
 )
 
 # Baremetal ingress controller (nodeport-based)
-k8s_yaml('./test/ingress.yaml')
+helm_remote('ingress-nginx',
+            version="4.0.15",
+            repo_name='ingress-nginx',
+            set=['controller.admissionWebhooks.enabled=false'],
+            repo_url='https://kubernetes.github.io/ingress-nginx')
+
+#k8s_yaml('./test/ingress.yaml')
 
 # Metallb
-k8s_yaml('./test/metallb.yaml')
+#k8s_yaml('./test/metallb.yaml')
+helm_remote('metallb',
+            version="0.11.0",
+            repo_name='metallb',
+            values=['./test/metallb-values.yaml'],
+            repo_url='https://metallb.github.io/metallb')
 
 # Nginxinc kubernetes-ingress
 k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
@@ -44,4 +56,16 @@ k8s_yaml('./test/nginx-kubernetes-ingress/ingress.yaml')
 k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1alpha2')
 k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1alpha2')
 k8s_yaml('./test/gateway-api/crds.yml')
-k8s_yaml('./test/gateway-api/istio.yml')
+
+
+helm_remote('istiod',
+            version="1.12.1",
+            repo_name='istio',
+            set=['global.istioNamespace=default', 'base.enableIstioConfigCRDs=false', 'telemetry.enabled=false'],
+            repo_url='https://istio-release.storage.googleapis.com/charts')
+helm_remote('gateway',
+            version="1.12.1",
+            repo_name='istio',
+            namespace='default',
+            repo_url='https://istio-release.storage.googleapis.com/charts')
+#k8s_yaml('./test/gateway-api/istio.yml')

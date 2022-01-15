@@ -5,6 +5,7 @@ metadata:
   name: ingress-myservicea
   namespace: default
 spec:
+  ingressClassName: nginx
   rules:
   - host: myservicea.foo.org
     http:
@@ -23,6 +24,7 @@ metadata:
   name: ingress-myserviceb
   namespace: default
 spec:
+  ingressClassName: nginx
   rules:
   - host: myserviceb.foo.org
     http:
