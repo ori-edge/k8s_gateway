@@ -3736,25 +3736,25 @@ status:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 ---
 # Source: nginx-ingress/templates/controller-secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: RELEASE-NAME-nginx-ingress-default-server-tls
+  name: nginxinc-nginx-ingress-default-server-tls
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 type: kubernetes.io/tls
 data:
   tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN2akNDQWFZQ0NRREFPRjl0THNhWFhEQU5CZ2txaGtpRzl3MEJBUXNGQURBaE1SOHdIUVlEVlFRRERCWk8KUjBsT1dFbHVaM0psYzNORGIyNTBjbTlzYkdWeU1CNFhEVEU0TURreE1qRTRNRE16TlZvWERUSXpNRGt4TVRFNApNRE16TlZvd0lURWZNQjBHQTFVRUF3d1dUa2RKVGxoSmJtZHlaWE56UTI5dWRISnZiR3hsY2pDQ0FTSXdEUVlKCktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUwvN2hIUEtFWGRMdjNyaUM3QlBrMTNpWkt5eTlyQ08KR2xZUXYyK2EzUDF0azIrS3YwVGF5aGRCbDRrcnNUcTZzZm8vWUk1Y2Vhbkw4WGM3U1pyQkVRYm9EN2REbWs1Qgo4eDZLS2xHWU5IWlg0Rm5UZ0VPaStlM2ptTFFxRlBSY1kzVnNPazFFeUZBL0JnWlJVbkNHZUtGeERSN0tQdGhyCmtqSXVuektURXUyaDU4Tlp0S21ScUJHdDEwcTNRYzhZT3ExM2FnbmovUWRjc0ZYYTJnMjB1K1lYZDdoZ3krZksKWk4vVUkxQUQ0YzZyM1lma1ZWUmVHd1lxQVp1WXN2V0RKbW1GNWRwdEMzN011cDBPRUxVTExSakZJOTZXNXIwSAo1TmdPc25NWFJNV1hYVlpiNWRxT3R0SmRtS3FhZ25TZ1JQQVpQN2MwQjFQU2FqYzZjNGZRVXpNQ0F3RUFBVEFOCkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWpLb2tRdGRPcEsrTzhibWVPc3lySmdJSXJycVFVY2ZOUitjb0hZVUoKdGhrYnhITFMzR3VBTWI5dm15VExPY2xxeC9aYzJPblEwMEJCLzlTb0swcitFZ1U2UlVrRWtWcitTTFA3NTdUWgozZWI4dmdPdEduMS9ienM3bzNBaS9kclkrcUI5Q2k1S3lPc3FHTG1US2xFaUtOYkcyR1ZyTWxjS0ZYQU80YTY3Cklnc1hzYktNbTQwV1U3cG9mcGltU1ZmaXFSdkV5YmN3N0NYODF6cFErUyt1eHRYK2VBZ3V0NHh3VlI5d2IyVXYKelhuZk9HbWhWNThDd1dIQnNKa0kxNXhaa2VUWXdSN0diaEFMSkZUUkk3dkhvQXprTWIzbjAxQjQyWjNrN3RXNQpJUDFmTlpIOFUvOWxiUHNoT21FRFZkdjF5ZytVRVJxbStGSis2R0oxeFJGcGZnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
@@ -3764,37 +3764,37 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 data:
 ---
 # Source: nginx-ingress/templates/controller-leader-election-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: RELEASE-NAME-nginx-ingress-leader-election
+  name: nginxinc-nginx-ingress-leader-election
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 ---
 # Source: nginx-ingress/templates/rbac.yaml
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 rules:
 - apiGroups:
   - ""
@@ -3884,32 +3884,32 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 subjects:
 - kind: ServiceAccount
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   namespace: default
 roleRef:
   kind: ClusterRole
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   apiGroup: rbac.authorization.k8s.io
 ---
 # Source: nginx-ingress/templates/controller-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 spec:
   externalTrafficPolicy: Local
   type: LoadBalancer
@@ -3923,38 +3923,38 @@ spec:
     protocol: TCP
     name: https
   selector:
-    app:  RELEASE-NAME-nginx-ingress
+    app:  nginxinc-nginx-ingress
 ---
 # Source: nginx-ingress/templates/controller-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: RELEASE-NAME-nginx-ingress
+  name: nginxinc-nginx-ingress
   namespace: default
   labels:
-    app.kubernetes.io/name: RELEASE-NAME-nginx-ingress
+    app.kubernetes.io/name: nginxinc-nginx-ingress
     helm.sh/chart: nginx-ingress-0.11.3
     app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/instance: nginxinc
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: RELEASE-NAME-nginx-ingress
+      app: nginxinc-nginx-ingress
   template:
     metadata:
       labels:
-        app: RELEASE-NAME-nginx-ingress
+        app: nginxinc-nginx-ingress
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9113"
         prometheus.io/scheme: "http"
     spec:
-      serviceAccountName: RELEASE-NAME-nginx-ingress
+      serviceAccountName: nginxinc-nginx-ingress
       hostNetwork: false
       containers:
       - image: "nginx/nginx-ingress:2.0.3"
-        name: RELEASE-NAME-nginx-ingress
+        name: nginxinc-nginx-ingress
         imagePullPolicy: "IfNotPresent"
         ports:
         - name: http
@@ -3994,8 +3994,8 @@ spec:
           - -nginx-plus=false
           - -nginx-reload-timeout=60000
           - -enable-app-protect=false
-          - -nginx-configmaps=$(POD_NAMESPACE)/RELEASE-NAME-nginx-ingress
-          - -default-server-tls-secret=$(POD_NAMESPACE)/RELEASE-NAME-nginx-ingress-default-server-tls
+          - -nginx-configmaps=$(POD_NAMESPACE)/nginxinc-nginx-ingress
+          - -default-server-tls-secret=$(POD_NAMESPACE)/nginxinc-nginx-ingress-default-server-tls
           - -ingress-class=nginxinc
           - -health-status=false
           - -health-status-uri=/nginx-health
@@ -4005,9 +4005,9 @@ spec:
           - -nginx-status-port=8080
           - -nginx-status-allow-cidrs=127.0.0.1
           - -report-ingress-status
-          - -external-service=RELEASE-NAME-nginx-ingress
+          - -external-service=nginxinc-nginx-ingress
           - -enable-leader-election=true
-          - -leader-election-lock-name=RELEASE-NAME-nginx-ingress-leader-election
+          - -leader-election-lock-name=nginxinc-nginx-ingress-leader-election
           - -enable-prometheus-metrics=true
           - -prometheus-metrics-listen-port=9113
           - -prometheus-tls-secret=
