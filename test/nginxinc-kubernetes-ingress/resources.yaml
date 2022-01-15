@@ -5,7 +5,7 @@ metadata:
   name: ingress-nginx-test-a
   namespace: default
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginxinc
   rules:
   - host: myservicea.foo.org
     http:
@@ -24,7 +24,7 @@ metadata:
   name: ingress-nginx-test-b
   namespace: default
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginxinc
   rules:
   - host: myserviceb.foo.org
     http:
