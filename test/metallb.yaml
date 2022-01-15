@@ -138,7 +138,7 @@ data:
   config: |
     address-pools:
     - addresses:
-      - 172.17.0.128/25
+      - 192.168.223.128/25
       name: my-ip-space
       protocol: layer2
 ---

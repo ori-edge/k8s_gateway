@@ -1,0 +1,6 @@
+configInline:
+  address-pools:
+  - name: my-ip-space
+    protocol: layer2
+    addresses:
+    - 192.168.223.128/25
