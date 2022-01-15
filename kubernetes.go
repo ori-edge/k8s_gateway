@@ -186,34 +186,27 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
 
 	_, err := c.GatewayV1alpha2().Gateways("").List(ctx, metav1.ListOptions{})
-	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
-		log.Infof("GatewayAPI CRDs are not found. Not syncing GatewayAPI resources.")
-		return false
-	}
-	if apierrors.IsForbidden(err) {
-		log.Infof("access to `gateway.networking.k8s.io` is forbidden, please check RBAC. Not syncing GatewayAPI resources.")
-		return false
-	}
-	if err == nil {
-		return true
-	}
-	panic(err)
+	return handleCRDCheckError(err, "GatewayAPI", "gateway.networking.k8s.io")
 }
 
 func existVirtualServerCRDs(ctx context.Context, c *k8s_nginx.Clientset) bool {
 	_, err := c.K8sV1().VirtualServers("").List(ctx, metav1.ListOptions{})
+	return handleCRDCheckError(err, "VirtualServer", "k8s.nginx.org/v1")
+}
+
+func handleCRDCheckError(err error, resourceName string, apiGroup string) bool {
 	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
-		log.Infof("VirtualServer CRDs are not found. Not syncing VirtualServer resources.")
+		log.Infof("%s CRDs are not found. Not syncing %s resources.", resourceName, resourceName)
 		return false
 	}
 	if apierrors.IsForbidden(err) {
-		log.Infof("access to `k8s.nginx.org/v1` is forbidden, please check RBAC. Not syncing VirtualServer resources.")
+		log.Infof("access to `%s` is forbidden, please check RBAC. Not syncing %s resources.", apiGroup, resourceName)
 		return false
 	}
-	if err == nil {
-		return true
+	if err != nil {
+		panic(err)
 	}
-	panic(err)
+	return true
 }
 
 func (gw *Gateway) getClientConfig() (*rest.Config, error) {
