@@ -27,6 +27,10 @@ var orderedResources = []*resourceWithIndex{
 		lookup: noop,
 	},
 	{
+		name:   "VirtualServer",
+		lookup: noop,
+	},
+	{
 		name:   "Ingress",
 		lookup: noop,
 	},

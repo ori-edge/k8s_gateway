@@ -1,0 +1,125 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-test-a
+  namespace: default
+spec:
+  ingressClassName: nginxinc
+  rules:
+  - host: myservicea.foo.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-test-a
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx-test-b
+  namespace: default
+spec:
+  ingressClassName: nginxinc
+  rules:
+  - host: myserviceb.foo.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-test-b
+            port:
+              number: 80
+---
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: virtualserver-nginx-test-a
+spec:
+  host: virtualservera.foo.org
+  upstreams:
+  - name: nginx-test-a
+    service: nginx-test-a
+    port: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-test-a
+  name: nginx-test-a
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-test-a
+  template:
+    metadata:
+      labels:
+        app: nginx-test-a
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-test-a
+  namespace: default
+spec:
+  ports:
+  - name: http-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-test-a
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-test-b
+  namespace: default
+spec:
+  ports:
+  - name: http-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx-test-b
+  sessionAffinity: None
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-test-b
+  name: nginx-test-b
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-test-b
+  template:
+    metadata:
+      labels:
+        app: nginx-test-b
+    spec:
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx

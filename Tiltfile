@@ -28,6 +28,11 @@ k8s_yaml('./test/ingress.yaml')
 # Metallb
 k8s_yaml('./test/metallb.yaml')
 
+# Nginxinc kubernetes-ingress
+k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
+k8s_yaml('./test/nginx-kubernetes-ingress/resources.yaml')
+k8s_yaml('./test/nginx-kubernetes-ingress/ingress.yaml')
+
 # Gateway API
 k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1alpha2')
 k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1alpha2')
