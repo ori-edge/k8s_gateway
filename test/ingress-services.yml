@@ -18,25 +18,6 @@ spec:
             port: 
               number: 80
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ingress-myserviceb
-  namespace: default
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: myserviceb.foo.org
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ingress
-            port: 
-              number: 80
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

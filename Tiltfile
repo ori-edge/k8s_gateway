@@ -51,8 +51,9 @@ helm_remote('metallb',
 k8s_kind('VirtualServer', api_version='k8s.nginx.org/v1')
 helm_remote('nginx-ingress',
             version="0.12.0",
+            release_name="nginxinc",
             repo_name='nginx-stable',
-            values=['./test/nginx-kubernetes-ingress/values.yaml'],
+            values=['./test/nginxinc-kubernetes-ingress/values.yaml'],
             repo_url='https://helm.nginx.com/stable')
 
 
