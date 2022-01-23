@@ -25,6 +25,9 @@ rules:
 - apiGroups: ["gateway.networking.k8s.io"]
   resources: ["*"]
   verbs: ["watch", "list"]
+- apiGroups: ["k8s.nginx.org"]
+  resources: ["*"]
+  verbs: ["watch", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

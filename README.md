@@ -152,7 +152,7 @@ This repository contains a [Tiltfile](https://tilt.dev/) that can be used for lo
 make setup
 ```
 
-To bind up a tilt development enviornment do:
+To bring up a tilt development enviornment run `tilt up` or:
 
 ```
 make up
@@ -162,25 +162,46 @@ Some test resources can be added to the k8s cluster with:
 
 ```
 # ingress and service resources
-kubectl apply -f ./test/test.yml
+kubectl apply -f ./test/ingress-services.yml
 
 # gateway API resources
 kubectl apply -f ./test/gateway-api/resources.yml
+
+# nginxinc's VirtualService  resources
+kubectl apply -f test/nginxinc-kubernetes-ingress/resources.yaml
 ```
 
 Test queries can be sent to the exposed CoreDNS service like this:
 
 ```
 $ ip=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[0].address}')
+
+# ingress resource
 $ dig @$ip -p 32553 myservicea.foo.org +short
-192.168.224.2
+198.51.100.0
+
+# loadBalancer
 $ dig @$ip -p 32553 test.default.foo.org +short
-192.168.223.129
+198.51.100.3
+
+# HTTPRoute/gateway-API
 $ dig @$ip -p 32553 myservicea.gw.foo.org +short
-192.168.223.130
+198.51.100.4
+$ dig @$ip -p 32553 myserviceb.gw.foo.org +short
+198.51.100.4
+
+# multi-gateway HTTPRoute
 $ dig @$ip -p 32553 myserviced.gw.foo.org +short
-192.168.223.130
-192.168.223.131
+198.51.100.5
+198.51.100.4
+
+# nginxinc's Ingress
+$ dig @$ip -p 32553 myserviceb.foo.org +short
+198.51.100.2
+
+# nginxinc's VirtualServer
+$ dig @$ip -p 32553 virtualservera.foo.org +short
+198.51.100.2
 ```
 
 To cleanup local environment do:
