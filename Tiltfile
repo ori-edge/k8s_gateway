@@ -21,7 +21,6 @@ docker_build_with_restart(IMG, '.',
 k8s_kind("kind")
 
 # CoreDNS with updated RBAC
-#k8s_yaml('./test/kubernetes.yaml')
 k8s_yaml(helm(
     './charts/k8s-gateway',
     namespace="kube-system",
@@ -37,10 +36,10 @@ helm_remote('ingress-nginx',
             set=['controller.admissionWebhooks.enabled=false'],
             repo_url='https://kubernetes.github.io/ingress-nginx')
 
-#k8s_yaml('./test/ingress.yaml')
+# Backend deployment for testing
+k8s_yaml('./test/backend.yml')
 
 # Metallb
-#k8s_yaml('./test/metallb.yaml')
 helm_remote('metallb',
             version="0.11.0",
             repo_name='metallb',
@@ -73,4 +72,3 @@ helm_remote('gateway',
             repo_name='istio',
             namespace='default',
             repo_url='https://istio-release.storage.googleapis.com/charts')
-#k8s_yaml('./test/gateway-api/istio.yml')

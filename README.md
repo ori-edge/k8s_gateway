@@ -197,11 +197,11 @@ $ dig @$ip -p 32553 myserviced.gw.foo.org +short
 
 # nginxinc's Ingress
 $ dig @$ip -p 32553 myserviceb.foo.org +short
-198.51.100.1
+198.51.100.2
 
 # nginxinc's VirtualServer
 $ dig @$ip -p 32553 virtualservera.foo.org +short
-198.51.100.1
+198.51.100.2
 ```
 
 To cleanup local environment do:

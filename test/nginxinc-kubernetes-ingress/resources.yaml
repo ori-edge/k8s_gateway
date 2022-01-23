@@ -14,7 +14,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nginx-test-b
+            name: backend
             port:
               number: 80
 ---
@@ -26,5 +26,5 @@ spec:
   host: virtualservera.foo.org
   upstreams:
   - name: nginx-test-a
-    service: nginx-test-a
+    service: backend
     port: 80

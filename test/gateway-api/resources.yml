@@ -46,7 +46,7 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: myservicea
+    - name: backend
       port: 80
 
 ---
@@ -66,7 +66,7 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: ingress
+    - name: backend
       port: 80
 
 ---
@@ -86,7 +86,7 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: ingress
+    - name: backend
       port: 80
 ---
 apiVersion: gateway.networking.k8s.io/v1alpha2
@@ -105,5 +105,5 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: myservicea
+    - name: backend
       port: 80
