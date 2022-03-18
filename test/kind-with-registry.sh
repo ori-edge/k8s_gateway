@@ -52,7 +52,7 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."127.0.0.1:${reg_port}"]
     endpoint = ["http://${reg_host}:${reg_port}"]
 EOF
 
@@ -64,7 +64,7 @@ metadata:
   namespace: kube-public
 data:
   localRegistryHosting.v1: |
-    host: "localhost:${reg_port}"
+    host: "127.0.0.1:${reg_port}"
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
 

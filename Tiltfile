@@ -1,7 +1,7 @@
 load('ext://restart_process', 'docker_build_with_restart')
 load('ext://helm_remote', 'helm_remote')
 
-IMG = 'localhost:5000/coredns'
+IMG = '127.0.0.1:5000/coredns'
 
 def binary():
     return "CGO_ENABLED=0  GOOS=linux GOATCH=amd64 GO111MODULE=on go build cmd/coredns.go"

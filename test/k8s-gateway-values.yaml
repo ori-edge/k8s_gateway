@@ -1,6 +1,6 @@
 nameOverride: k8s-gateway
 image:
-  registry: localhost:5000
+  registry: 127.0.0.1:5000
   repository: coredns
   tag: latest
 
