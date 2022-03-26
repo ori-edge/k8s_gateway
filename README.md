@@ -144,6 +144,24 @@ $ ./coredns -plugins | grep k8s_external
 For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compile-time-enabling-or-disabling-plugins/)
 
 
+## Release
+
+### Helm Charts 
+
+If the change was made only to helm charts, only two things are required:
+
+* Bump the chart version in `./charts/k8s-gateway/Chart.yaml`
+* Run `make help-update`
+
+### Plugin
+
+To cut a new plugin release the following is required:
+
+* Bump the app `pluginVersion` in `./cmd/coredns.go` and commit.
+* Tag the last commit with the save version number.
+* Bump the `appVersion` and `tag` in `./charts/k8s-gateway/Chart.yaml` and `./charts/k8s-gateway/values.yaml` respectively.
+* Run `make help-update`
+
 ## Hack
 
 This repository contains a [Tiltfile](https://tilt.dev/) that can be used for local development. To build a local k8s cluster with kind run:
