@@ -32,6 +32,9 @@ data:
           {{- if .Values.watchedResources }}
           resources {{ join " " .Values.watchedResources }}
           {{- end }}
+          {{- if .Values.fallthrough.enabled }}
+          fallthrough {{- range .Values.fallthrough.zones }} {{ . }} {{- end }}
+          {{- end }}
         }
         prometheus 0.0.0.0:9153
         loop

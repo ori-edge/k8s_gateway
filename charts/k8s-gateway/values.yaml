@@ -19,6 +19,11 @@ watchedResources: []
 # Service name of a secondary DNS server (should be `serviceName.namespace`)
 secondary: ""
 
+# Enabled fallthrough for k8s_gateway
+fallthrough:
+  enabled: false
+  zones: []
+
 # Override the default `serviceName.namespace` domain apex
 apex: ""
 

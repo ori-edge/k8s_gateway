@@ -10,6 +10,8 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | -------------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
 | `domain`                         | Delegated domain                                                                          |                       |
 | `watchedResources`               | Limit what kind of resources to watch, e.g. `watchedResources: ["Ingress"]`               | `[]`                  |
+| `fallthrough.enabled`            | Enable fallthrough support                                                                | `false`               |
+| `fallthrough.zones`              | List of zones to enable fallthrough on                                                    | `[]`                  |
 | `ttl`                            | TTL for non-apex responses (in seconds)                                                   | `300`                 |
 | `dnsChallenge.enabled`           | Optional configuration option for DNS01 challenge                                         | `false`               |
 | `dnsChallenge.domain`            | See: https://cert-manager.io/docs/configuration/acme/dns01/                               | `dns01.clouddns.com`  |
