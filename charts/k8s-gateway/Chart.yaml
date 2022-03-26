@@ -2,8 +2,8 @@ apiVersion: v2
 name: k8s-gateway
 description: A Helm chart for the k8s_gateway CoreDNS plugin
 type: application
-version: 1.1.4
-appVersion: 0.2.2
+version: 1.1.5
+appVersion: 0.2.3
 maintainers:
   - email: mmkashin@gmail.com
     name: Michael
