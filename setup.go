@@ -53,7 +53,9 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 		}
 
 		for i, str := range gw.Zones {
-			gw.Zones[i] = plugin.Host(str).NormalizeExact()[0]
+			if host := plugin.Host(str).NormalizeExact(); len(host) != 0 {
+				gw.Zones[i] = host[0]
+			}
 		}
 
 		for c.NextBlock() {
