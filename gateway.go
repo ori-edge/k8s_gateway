@@ -164,10 +164,22 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	m := new(dns.Msg)
 	m.SetReply(state.Req)
 
+	var ipv4Addrs []netip.Addr
+	var ipv6Addrs []netip.Addr
+
+	for _, addr := range addrs {
+		if addr.Is4() {
+			ipv4Addrs = append(ipv4Addrs, addr)
+		}
+		if addr.Is6() {
+			ipv6Addrs = append(ipv6Addrs, addr)
+		}
+	}
+
 	switch state.QType() {
 	case dns.TypeA:
 
-		if len(addrs) == 0 {
+		if len(ipv4Addrs) == 0 {
 
 			if !isRootZoneQuery {
 				// No match, return NXDOMAIN
@@ -178,11 +190,30 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 		} else {
 
-			m.Answer = gw.A(state.Name(), addrs)
+			m.Answer = gw.A(state.Name(), ipv4Addrs)
 			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 			// See https://github.com/coredns/coredns/pull/3573
 			m.Authoritative = true
 		}
+	case dns.TypeAAAA:
+
+		if len(ipv6Addrs) == 0 {
+
+			if !isRootZoneQuery {
+				// No match, return NXDOMAIN
+				m.Rcode = dns.RcodeNameError
+			}
+
+			m.Ns = []dns.RR{gw.soa(state)}
+
+		} else {
+
+			m.Answer = gw.AAAA(state.Name(), ipv6Addrs)
+			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+			// See https://github.com/coredns/coredns/pull/3573
+			m.Authoritative = true
+		}
+
 	case dns.TypeSOA:
 
 		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
@@ -225,6 +256,17 @@ func (gw *Gateway) A(name string, results []netip.Addr) (records []dns.RR) {
 		if _, ok := dup[result.String()]; !ok {
 			dup[result.String()] = struct{}{}
 			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: net.ParseIP(result.String())})
+		}
+	}
+	return records
+}
+
+func (gw *Gateway) AAAA(name string, results []netip.Addr) (records []dns.RR) {
+	dup := make(map[string]struct{})
+	for _, result := range results {
+		if _, ok := dup[result.String()]; !ok {
+			dup[result.String()] = struct{}{}
+			records = append(records, &dns.AAAA{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeAAAA, Class: dns.ClassINET, Ttl: gw.ttlLow}, AAAA: net.ParseIP(result.String())})
 		}
 	}
 	return records

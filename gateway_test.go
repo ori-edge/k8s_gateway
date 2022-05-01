@@ -105,7 +105,7 @@ func TestPluginFallthrough(t *testing.T) {
 }
 
 var tests = []test.Case{
-	// Existing Service | Test 0
+	// Existing Service IPv4 | Test 0
 	{
 		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
@@ -210,6 +210,13 @@ var tests = []test.Case{
 			test.A("shadow.example.com.	60	IN	A	192.0.2.4"),
 		},
 	},
+	// Existing Service IPv6 | Test 15
+	{
+		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.AAAA("svc1.ns1.example.com.	60	IN	AAAA	fd12:3456:789a:1::"),
+		},
+	},
 }
 
 var testsFallthrough = []FallthroughCase{
@@ -241,7 +248,7 @@ var testsFallthrough = []FallthroughCase{
 }
 
 var testServiceIndexes = map[string][]netip.Addr{
-	"svc1.ns1": {netip.MustParseAddr("192.0.1.1")},
+	"svc1.ns1": {netip.MustParseAddr("192.0.1.1"), netip.MustParseAddr("fd12:3456:789a:1::")},
 	"svc2.ns1": {netip.MustParseAddr("192.0.1.2")},
 	"svc3.ns1": {},
 }
