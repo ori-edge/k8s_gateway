@@ -54,6 +54,14 @@ containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
     endpoint = ["http://${reg_host}:${reg_port}"]
+nodes:
+- role: control-plane
+  extraPortMappings:
+  - containerPort: 32553
+    hostPort: 32553
+    protocol: UDP
+networking:
+  ipFamily: dual
 EOF
 
 cat <<EOF | kubectl apply -f -
