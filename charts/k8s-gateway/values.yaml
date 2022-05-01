@@ -63,3 +63,5 @@ priorityClassName: ""
 
 debug:
   enabled: false
+
+secure: true

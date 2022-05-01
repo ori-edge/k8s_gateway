@@ -20,8 +20,10 @@ spec:
         image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
+        {{- if .Values.secure }}
         securityContext:
           runAsUser: 1000
+        {{- end }}
         volumeMounts:
         - name: config-volume
           mountPath: /etc/coredns
