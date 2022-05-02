@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/coredns/coredns/plugin"
@@ -12,14 +13,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-type lookupFunc func(indexKeys []string) []net.IP
+type lookupFunc func(indexKeys []string) []netip.Addr
 
 type resourceWithIndex struct {
 	name   string
 	lookup lookupFunc
 }
 
-var noop lookupFunc = func([]string) (result []net.IP) { return }
+var noop lookupFunc = func([]string) (result []netip.Addr) { return }
 
 var orderedResources = []*resourceWithIndex{
 	{
@@ -143,7 +144,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		}
 	}
 
-	var addrs []net.IP
+	var addrs []netip.Addr
 
 	// Iterate over supported resources and lookup DNS queries
 	// Stop once we've found at least one match
@@ -218,12 +219,12 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 func (gw *Gateway) Name() string { return thisPlugin }
 
 // A does the A-record lookup in ingress indexer
-func (gw *Gateway) A(name string, results []net.IP) (records []dns.RR) {
+func (gw *Gateway) A(name string, results []netip.Addr) (records []dns.RR) {
 	dup := make(map[string]struct{})
 	for _, result := range results {
 		if _, ok := dup[result.String()]; !ok {
 			dup[result.String()] = struct{}{}
-			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: result})
+			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: net.ParseIP(result.String())})
 		}
 	}
 	return records
@@ -232,7 +233,7 @@ func (gw *Gateway) A(name string, results []net.IP) (records []dns.RR) {
 // SelfAddress returns the address of the local k8s_gateway service
 func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 
-	var addrs1, addrs2 []net.IP
+	var addrs1, addrs2 []netip.Addr
 	for _, resource := range gw.Resources {
 		results := resource.lookup([]string{gw.apex})
 		if len(results) > 0 {

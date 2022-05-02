@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"strings"
 
 	nginx_v1 "github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/v1"
@@ -353,8 +354,8 @@ func virtualServerHostnameIndexFunc(obj interface{}) ([]string, error) {
 	return []string{virtualServer.Spec.Host}, nil
 }
 
-func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {
-	return func(indexKeys []string) (result []net.IP) {
+func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.Addr {
+	return func(indexKeys []string) (result []netip.Addr) {
 		var objs []interface{}
 		for _, key := range indexKeys {
 			obj, _ := ctrl.GetIndexer().ByIndex(serviceHostnameIndex, strings.ToLower(key))
@@ -370,8 +371,8 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 	}
 }
 
-func lookupVirtualServerIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {
-	return func(indexKeys []string) (result []net.IP) {
+func lookupVirtualServerIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.Addr {
+	return func(indexKeys []string) (result []netip.Addr) {
 		var objs []interface{}
 		for _, key := range indexKeys {
 			obj, _ := ctrl.GetIndexer().ByIndex(virtualServerHostnameIndex, strings.ToLower(key))
@@ -382,15 +383,19 @@ func lookupVirtualServerIndex(ctrl cache.SharedIndexInformer) func([]string) []n
 			virtualServer, _ := obj.(*nginx_v1.VirtualServer)
 
 			for _, endpoint := range virtualServer.Status.ExternalEndpoints {
-				result = append(result, net.ParseIP(endpoint.IP))
+				addr, err := netip.ParseAddr(endpoint.IP)
+				if err != nil {
+					continue
+				}
+				result = append(result, addr)
 			}
 		}
 		return
 	}
 }
 
-func lookupHttpRouteIndex(http, gw cache.SharedIndexInformer) func([]string) []net.IP {
-	return func(indexKeys []string) (result []net.IP) {
+func lookupHttpRouteIndex(http, gw cache.SharedIndexInformer) func([]string) []netip.Addr {
+	return func(indexKeys []string) (result []netip.Addr) {
 		var objs []interface{}
 		for _, key := range indexKeys {
 			obj, _ := http.GetIndexer().ByIndex(httpRouteHostnameIndex, strings.ToLower(key))
@@ -406,7 +411,7 @@ func lookupHttpRouteIndex(http, gw cache.SharedIndexInformer) func([]string) []n
 	}
 }
 
-func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1alpha2.ParentRef, ns string) (result []net.IP) {
+func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1alpha2.ParentRef, ns string) (result []netip.Addr) {
 
 	for _, gwRef := range refs {
 
@@ -426,8 +431,8 @@ func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1alpha2.Par
 	return
 }
 
-func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP {
-	return func(indexKeys []string) (result []net.IP) {
+func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.Addr {
+	return func(indexKeys []string) (result []netip.Addr) {
 		var objs []interface{}
 		for _, key := range indexKeys {
 			obj, _ := ctrl.GetIndexer().ByIndex(ingressHostnameIndex, strings.ToLower(key))
@@ -444,36 +449,56 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []net.IP 
 	}
 }
 
-func fetchGatewayIPs(gw *gatewayapi_v1alpha2.Gateway) (results []net.IP) {
+func fetchGatewayIPs(gw *gatewayapi_v1alpha2.Gateway) (results []netip.Addr) {
 
 	for _, addr := range gw.Status.Addresses {
 		if *addr.Type == gatewayapi_v1alpha2.IPAddressType {
-			results = append(results, net.ParseIP(addr.Value))
+			addr, err := netip.ParseAddr(addr.Value)
+			if err != nil {
+				continue
+			}
+			results = append(results, addr)
 			continue
 		}
 
 		if *addr.Type == gatewayapi_v1alpha2.HostnameAddressType {
-			ip, err := net.LookupIP(addr.Value)
+			ips, err := net.LookupIP(addr.Value)
 			if err != nil {
 				continue
 			}
-			results = append(results, ip...)
+			for _, ip := range ips {
+				addr, err := netip.ParseAddr(ip.String())
+				if err != nil {
+					continue
+				}
+				results = append(results, addr)
+			}
 		}
 	}
 	return
 }
 
-func fetchLoadBalancerIPs(lb core.LoadBalancerStatus) (results []net.IP) {
+func fetchLoadBalancerIPs(lb core.LoadBalancerStatus) (results []netip.Addr) {
 	for _, address := range lb.Ingress {
 		if address.Hostname != "" {
 			log.Debugf("Looking up hostname %s", address.Hostname)
-			ip, err := net.LookupIP(address.Hostname)
+			ips, err := net.LookupIP(address.Hostname)
 			if err != nil {
 				continue
 			}
-			results = append(results, ip...)
+			for _, ip := range ips {
+				addr, err := netip.ParseAddr(ip.String())
+				if err != nil {
+					continue
+				}
+				results = append(results, addr)
+			}
 		} else if address.IP != "" {
-			results = append(results, net.ParseIP(address.IP))
+			addr, err := netip.ParseAddr(address.IP)
+			if err != nil {
+				continue
+			}
+			results = append(results, addr)
 		}
 	}
 	return

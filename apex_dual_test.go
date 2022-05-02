@@ -2,7 +2,7 @@ package gateway
 
 import (
 	"context"
-	"net"
+	"net/netip"
 	"testing"
 
 	"github.com/coredns/coredns/plugin/pkg/dnstest"
@@ -15,13 +15,13 @@ import (
 func setupEmptyLookupFuncs() {
 
 	if resource := lookupResource("HTTPRoute"); resource != nil {
-		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
 	}
 	if resource := lookupResource("Ingress"); resource != nil {
-		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
 	}
 	if resource := lookupResource("Service"); resource != nil {
-		resource.lookup = func(_ []string) []net.IP { return []net.IP{} }
+		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
 	}
 }
 
