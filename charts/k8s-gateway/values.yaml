@@ -51,6 +51,13 @@ service:
   # externalTrafficPolicy: Local
   # externalIPs:
   #  - 192.168.1.3
+  # One of SingleStack, PreferDualStack, or RequireDualStack.
+  # ipFamilyPolicy: SingleStack
+  # List of IP families (e.g. IPv4 and/or IPv6).
+  # ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
 
 nodeSelector: {}
 
@@ -63,3 +70,5 @@ priorityClassName: ""
 
 debug:
   enabled: false
+
+secure: true

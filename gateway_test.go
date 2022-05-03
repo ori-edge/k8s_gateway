@@ -3,7 +3,7 @@ package gateway
 import (
 	"context"
 	"errors"
-	"net"
+	"net/netip"
 	"strings"
 	"testing"
 
@@ -105,7 +105,7 @@ func TestPluginFallthrough(t *testing.T) {
 }
 
 var tests = []test.Case{
-	// Existing Service | Test 0
+	// Existing Service IPv4 | Test 0
 	{
 		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
@@ -210,6 +210,13 @@ var tests = []test.Case{
 			test.A("shadow.example.com.	60	IN	A	192.0.2.4"),
 		},
 	},
+	// Existing Service IPv6 | Test 15
+	{
+		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.AAAA("svc1.ns1.example.com.	60	IN	AAAA	fd12:3456:789a:1::"),
+		},
+	},
 }
 
 var testsFallthrough = []FallthroughCase{
@@ -240,53 +247,53 @@ var testsFallthrough = []FallthroughCase{
 	},
 }
 
-var testServiceIndexes = map[string][]net.IP{
-	"svc1.ns1": {net.ParseIP("192.0.1.1")},
-	"svc2.ns1": {net.ParseIP("192.0.1.2")},
+var testServiceIndexes = map[string][]netip.Addr{
+	"svc1.ns1": {netip.MustParseAddr("192.0.1.1"), netip.MustParseAddr("fd12:3456:789a:1::")},
+	"svc2.ns1": {netip.MustParseAddr("192.0.1.2")},
 	"svc3.ns1": {},
 }
 
-func testServiceLookup(keys []string) (results []net.IP) {
+func testServiceLookup(keys []string) (results []netip.Addr) {
 	for _, key := range keys {
 		results = append(results, testServiceIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
 
-var testIngressIndexes = map[string][]net.IP{
-	"domain.example.com":    {net.ParseIP("192.0.0.1")},
-	"svc2.ns1.example.com":  {net.ParseIP("192.0.0.2")},
-	"example.com":           {net.ParseIP("192.0.0.3")},
-	"shadow.example.com":    {net.ParseIP("192.0.0.4")},
-	"shadow-vs.example.com": {net.ParseIP("192.0.0.5")},
+var testIngressIndexes = map[string][]netip.Addr{
+	"domain.example.com":    {netip.MustParseAddr("192.0.0.1")},
+	"svc2.ns1.example.com":  {netip.MustParseAddr("192.0.0.2")},
+	"example.com":           {netip.MustParseAddr("192.0.0.3")},
+	"shadow.example.com":    {netip.MustParseAddr("192.0.0.4")},
+	"shadow-vs.example.com": {netip.MustParseAddr("192.0.0.5")},
 }
 
-func testIngressLookup(keys []string) (results []net.IP) {
+func testIngressLookup(keys []string) (results []netip.Addr) {
 	for _, key := range keys {
 		results = append(results, testIngressIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
 
-var testVirtualServerIndexes = map[string][]net.IP{
-	"vs1.example.com":       {net.ParseIP("192.0.3.1")},
-	"shadow.example.com":    {net.ParseIP("192.0.3.4")},
-	"shadow-vs.example.com": {net.ParseIP("192.0.3.5")},
+var testVirtualServerIndexes = map[string][]netip.Addr{
+	"vs1.example.com":       {netip.MustParseAddr("192.0.3.1")},
+	"shadow.example.com":    {netip.MustParseAddr("192.0.3.4")},
+	"shadow-vs.example.com": {netip.MustParseAddr("192.0.3.5")},
 }
 
-func testVirtualServerLookup(keys []string) (results []net.IP) {
+func testVirtualServerLookup(keys []string) (results []netip.Addr) {
 	for _, key := range keys {
 		results = append(results, testVirtualServerIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
 
-var testHTTPRouteIndexes = map[string][]net.IP{
-	"domain.gw.example.com": {net.ParseIP("192.0.2.1")},
-	"shadow.example.com":    {net.ParseIP("192.0.2.4")},
+var testHTTPRouteIndexes = map[string][]netip.Addr{
+	"domain.gw.example.com": {netip.MustParseAddr("192.0.2.1")},
+	"shadow.example.com":    {netip.MustParseAddr("192.0.2.4")},
 }
 
-func testHTTPRouteLookup(keys []string) (results []net.IP) {
+func testHTTPRouteLookup(keys []string) (results []netip.Addr) {
 	for _, key := range keys {
 		results = append(results, testHTTPRouteIndexes[strings.ToLower(key)]...)
 	}

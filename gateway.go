@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"strings"
 
 	"github.com/coredns/coredns/plugin"
@@ -12,14 +13,14 @@ import (
 	"github.com/miekg/dns"
 )
 
-type lookupFunc func(indexKeys []string) []net.IP
+type lookupFunc func(indexKeys []string) []netip.Addr
 
 type resourceWithIndex struct {
 	name   string
 	lookup lookupFunc
 }
 
-var noop lookupFunc = func([]string) (result []net.IP) { return }
+var noop lookupFunc = func([]string) (result []netip.Addr) { return }
 
 var orderedResources = []*resourceWithIndex{
 	{
@@ -143,7 +144,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		}
 	}
 
-	var addrs []net.IP
+	var addrs []netip.Addr
 
 	// Iterate over supported resources and lookup DNS queries
 	// Stop once we've found at least one match
@@ -163,10 +164,22 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	m := new(dns.Msg)
 	m.SetReply(state.Req)
 
+	var ipv4Addrs []netip.Addr
+	var ipv6Addrs []netip.Addr
+
+	for _, addr := range addrs {
+		if addr.Is4() {
+			ipv4Addrs = append(ipv4Addrs, addr)
+		}
+		if addr.Is6() {
+			ipv6Addrs = append(ipv6Addrs, addr)
+		}
+	}
+
 	switch state.QType() {
 	case dns.TypeA:
 
-		if len(addrs) == 0 {
+		if len(ipv4Addrs) == 0 {
 
 			if !isRootZoneQuery {
 				// No match, return NXDOMAIN
@@ -177,11 +190,30 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 		} else {
 
-			m.Answer = gw.A(state.Name(), addrs)
+			m.Answer = gw.A(state.Name(), ipv4Addrs)
 			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
 			// See https://github.com/coredns/coredns/pull/3573
 			m.Authoritative = true
 		}
+	case dns.TypeAAAA:
+
+		if len(ipv6Addrs) == 0 {
+
+			if !isRootZoneQuery {
+				// No match, return NXDOMAIN
+				m.Rcode = dns.RcodeNameError
+			}
+
+			m.Ns = []dns.RR{gw.soa(state)}
+
+		} else {
+
+			m.Answer = gw.AAAA(state.Name(), ipv6Addrs)
+			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+			// See https://github.com/coredns/coredns/pull/3573
+			m.Authoritative = true
+		}
+
 	case dns.TypeSOA:
 
 		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
@@ -218,12 +250,23 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 func (gw *Gateway) Name() string { return thisPlugin }
 
 // A does the A-record lookup in ingress indexer
-func (gw *Gateway) A(name string, results []net.IP) (records []dns.RR) {
+func (gw *Gateway) A(name string, results []netip.Addr) (records []dns.RR) {
 	dup := make(map[string]struct{})
 	for _, result := range results {
 		if _, ok := dup[result.String()]; !ok {
 			dup[result.String()] = struct{}{}
-			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: result})
+			records = append(records, &dns.A{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: gw.ttlLow}, A: net.ParseIP(result.String())})
+		}
+	}
+	return records
+}
+
+func (gw *Gateway) AAAA(name string, results []netip.Addr) (records []dns.RR) {
+	dup := make(map[string]struct{})
+	for _, result := range results {
+		if _, ok := dup[result.String()]; !ok {
+			dup[result.String()] = struct{}{}
+			records = append(records, &dns.AAAA{Hdr: dns.RR_Header{Name: name, Rrtype: dns.TypeAAAA, Class: dns.ClassINET, Ttl: gw.ttlLow}, AAAA: net.ParseIP(result.String())})
 		}
 	}
 	return records
@@ -232,7 +275,7 @@ func (gw *Gateway) A(name string, results []net.IP) (records []dns.RR) {
 // SelfAddress returns the address of the local k8s_gateway service
 func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 
-	var addrs1, addrs2 []net.IP
+	var addrs1, addrs2 []netip.Addr
 	for _, resource := range gw.Resources {
 		results := resource.lookup([]string{gw.apex})
 		if len(results) > 0 {

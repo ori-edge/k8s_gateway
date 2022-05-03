@@ -16,6 +16,9 @@ service:
   # externalTrafficPolicy: Local
   # externalIPs:
   #  - 192.168.1.3
+  ipFamilyPolicy: RequireDualStack
 
 debug:
   enabled: true
+
+secure: false

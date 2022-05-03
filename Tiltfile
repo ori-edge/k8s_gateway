@@ -41,7 +41,7 @@ k8s_yaml('./test/backend.yml')
 
 # Metallb
 helm_remote('metallb',
-            version="0.11.0",
+            version="0.12.1",
             repo_name='metallb',
             values=['./test/metallb-values.yaml'],
             repo_url='https://metallb.github.io/metallb')
