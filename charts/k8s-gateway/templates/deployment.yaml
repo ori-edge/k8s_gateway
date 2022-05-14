@@ -56,6 +56,10 @@ spec:
             items:
             - key: Corefile
               path: Corefile
+            {{- if .Values.zoneFile }}
+            - key: {{ .Values.zoneFile.filename }}
+              path: {{ .Values.zoneFile.filename }}
+            {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
