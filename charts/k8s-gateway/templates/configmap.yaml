@@ -43,4 +43,10 @@ data:
         {{- if .Values.extraZonePlugins -}}
         {{- .Values.extraZonePlugins | nindent 8 }}
         {{- end }}
+        {{- if .Values.zoneFile }}
+        file {{ .Values.zoneFile.filename }}
+        {{- end }}
     }
+  {{- if .Values.zoneFile }}
+  {{ .Values.zoneFile.filename }}: {{ toYaml .Values.zoneFile.contents | indent 4 }}
+  {{- end }}
