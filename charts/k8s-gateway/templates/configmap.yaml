@@ -44,7 +44,7 @@ data:
         {{- .Values.extraZonePlugins | nindent 8 }}
         {{- end }}
         {{- if .Values.zoneFile }}
-        file {{ .Values.zoneFile.filename }}
+        file /etc/coredns/{{ .Values.zoneFile.filename }}
         {{- end }}
     }
   {{- if .Values.zoneFile }}
