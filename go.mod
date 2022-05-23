@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/coredns/caddy v1.1.1
 	github.com/coredns/coredns v1.9.2
-	github.com/miekg/dns v1.1.48
+	github.com/miekg/dns v1.1.49
 	github.com/nginxinc/kubernetes-ingress v1.12.4
 	k8s.io/api v0.24.0
 	k8s.io/apimachinery v0.24.0
