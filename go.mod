@@ -10,7 +10,7 @@ require (
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
 	k8s.io/client-go v0.23.5
-	sigs.k8s.io/gateway-api v0.4.2
+	sigs.k8s.io/gateway-api v0.4.3
 )
 
 require (
