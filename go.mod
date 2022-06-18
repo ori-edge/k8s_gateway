@@ -7,9 +7,9 @@ require (
 	github.com/coredns/coredns v1.9.3
 	github.com/miekg/dns v1.1.49
 	github.com/nginxinc/kubernetes-ingress v1.12.4
-	k8s.io/api v0.24.1
-	k8s.io/apimachinery v0.24.1
-	k8s.io/client-go v0.24.1
+	k8s.io/api v0.24.2
+	k8s.io/apimachinery v0.24.2
+	k8s.io/client-go v0.24.2
 	sigs.k8s.io/gateway-api v0.4.3
 )
 
