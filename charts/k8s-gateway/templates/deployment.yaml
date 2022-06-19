@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         {{- include "k8s-gateway.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ toYaml .Values | sha256sum }}
     spec:
       serviceAccountName: {{ include "k8s-gateway.serviceAccountName" . }}
       containers:
