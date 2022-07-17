@@ -294,7 +294,6 @@ func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 	}
 
 	return records
-	//return records
 }
 
 // Strips the zone from FQDN and return a hostname
