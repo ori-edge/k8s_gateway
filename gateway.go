@@ -204,6 +204,11 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 				m.Rcode = dns.RcodeNameError
 			}
 
+			// as per rfc4074 #3
+			if len(ipv4Addrs) > 0 {
+				m.Rcode = dns.RcodeSuccess
+			}
+
 			m.Ns = []dns.RR{gw.soa(state)}
 
 		} else {
