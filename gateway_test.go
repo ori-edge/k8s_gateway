@@ -210,7 +210,14 @@ var tests = []test.Case{
 			test.A("shadow.example.com.	60	IN	A	192.0.2.4"),
 		},
 	},
-	// Existing Service IPv6 | Test 15
+	// Existing Service A record, but no AAAA record | Test 15
+	{
+		Qname: "svc2.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeSuccess,
+		Ns: []dns.RR{
+			test.SOA("example.com.	60	IN	SOA	dns1.kube-system.example.com. hostmaster.example.com. 1499347823 7200 1800 86400 5"),
+		},
+	},
+	// Existing Service IPv6 | Test 16
 	{
 		Qname: "svc1.ns1.example.com.", Qtype: dns.TypeAAAA, Rcode: dns.RcodeSuccess,
 		Answer: []dns.RR{
