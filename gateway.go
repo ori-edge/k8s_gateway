@@ -292,7 +292,7 @@ func (gw *Gateway) SelfAddress(state request.Request) (records []dns.RR) {
 		}
 	}
 
-	records = append(records, gw.A(state.Name(), addrs1)...)
+	records = append(records, gw.A(gw.apex+"."+state.Zone, addrs1)...)
 
 	if state.QType() == dns.TypeNS {
 		records = append(records, gw.A(gw.secondNS+"."+state.Zone, addrs2)...)
