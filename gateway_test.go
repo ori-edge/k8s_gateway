@@ -49,6 +49,7 @@ func TestPlugin(t *testing.T) {
 	gw := newGateway()
 	gw.Zones = []string{"example.com."}
 	gw.Next = test.NextHandler(dns.RcodeSuccess, nil)
+	gw.ExternalAddrFunc = gw.SelfAddress
 	gw.Controller = ctrl
 	setupLookupFuncs()
 
@@ -83,7 +84,7 @@ func TestPluginFallthrough(t *testing.T) {
 	gw := newGateway()
 	gw.Zones = []string{"example.com."}
 	gw.Next = test.NextHandler(dns.RcodeSuccess, Fallen{})
-	gw.ExternalAddrFunc = selfAddressTest
+	gw.ExternalAddrFunc = gw.SelfAddress
 	gw.Controller = ctrl
 	setupLookupFuncs()
 
@@ -224,6 +225,16 @@ var tests = []test.Case{
 			test.AAAA("svc1.ns1.example.com.	60	IN	AAAA	fd12:3456:789a:1::"),
 		},
 	},
+	// lookup apex NS record | Test 17
+	{
+		Qname: "example.com.", Qtype: dns.TypeNS, Rcode: dns.RcodeSuccess,
+		Answer: []dns.RR{
+			test.NS("example.com.	60	IN	NS	dns1.kube-system.example.com"),
+		},
+		Extra: []dns.RR{
+			test.A("dns1.kube-system.example.com.	60	IN	A	192.0.1.53"),
+		},
+	},
 }
 
 var testsFallthrough = []FallthroughCase{
@@ -255,9 +266,10 @@ var testsFallthrough = []FallthroughCase{
 }
 
 var testServiceIndexes = map[string][]netip.Addr{
-	"svc1.ns1": {netip.MustParseAddr("192.0.1.1"), netip.MustParseAddr("fd12:3456:789a:1::")},
-	"svc2.ns1": {netip.MustParseAddr("192.0.1.2")},
-	"svc3.ns1": {},
+	"svc1.ns1":         {netip.MustParseAddr("192.0.1.1"), netip.MustParseAddr("fd12:3456:789a:1::")},
+	"svc2.ns1":         {netip.MustParseAddr("192.0.1.2")},
+	"svc3.ns1":         {},
+	"dns1.kube-system": {netip.MustParseAddr("192.0.1.53")},
 }
 
 func testServiceLookup(keys []string) (results []netip.Addr) {
