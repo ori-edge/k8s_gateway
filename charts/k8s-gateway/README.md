@@ -27,7 +27,8 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `serviceAccount.annotations`     | ServiceAccount annotations                                                                |                       |
 | `service.port`                   | Service port to expose                                                                    | `53`                  |
 | `service.type`                   | The type of service to create (`LoadBalancer`, `NodePort`)                                | `LoadBalancer`        |
-| `service.nodePort`               | Node port when service type is `NodePort`. Randomly chonsen by Kubernetes if not provided |                       |
+| `service.nodePort`               | Node port when service type is `NodePort`. Randomly chosen by Kubernetes if not provided  |                       |
 | `service.loadBalancerIP`         | The IP address to use when using serviceType `LoadBalancer`                               |                       |
+| `service.clusterIP`              | The IP address to use when using serviceType `ClusterIP`. Randomly chosen by Kubernetes if not provided  |        |
 | `replicaCount`                   | Number of replicas                                                                        | `1`                   |
-| `zoneFile`                       | Inject a custom zone file                                                                 | `{}`                   |
+| `zoneFile`                       | Inject a custom zone file                                                                 | `{}`                  |

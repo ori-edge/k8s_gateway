@@ -48,6 +48,7 @@ service:
   annotations: {}
   # nodePort: 30053
   # loadBalancerIP: 192.168.1.2
+  # clusterIP: 10.43.0.53
   # externalTrafficPolicy: Local
   # externalIPs:
   #  - 192.168.1.3
