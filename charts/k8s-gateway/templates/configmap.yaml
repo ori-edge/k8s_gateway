@@ -7,15 +7,9 @@ metadata:
 data:
   Corefile: |-
     .:1053 {
-        errors
-        {{ if .Values.debug.enabled }}
+        {{- if .Values.debug.enabled }}
         debug
         {{- end }}
-        log
-        health {
-            lameduck 5s
-        }
-        ready
         {{- if .Values.dnsChallenge.enabled }}
         template IN ANY {{ required "Delegated domain ('domain') is mandatory " .Values.domain }} {
            match "_acme-challenge[.](.*)[.]{{ include "k8s-gateway.regex" . }}"
@@ -36,12 +30,10 @@ data:
           fallthrough {{- range .Values.fallthrough.zones }} {{ . }} {{- end }}
           {{- end }}
         }
-        prometheus 0.0.0.0:9153
-        loop
-        reload
-        loadbalance
-        {{- if .Values.extraZonePlugins -}}
-        {{- .Values.extraZonePlugins | nindent 8 }}
+        {{- range .Values.extraZonePlugins }}
+        {{ .name }}{{ if .parameters }} {{ .parameters }}{{ end }}{{ if .configBlock }} {
+          {{ .configBlock | indent 2 }}
+        }{{ end }}
         {{- end }}
         {{- if .Values.zoneFile }}
         file /etc/coredns/{{ .Values.zoneFile.filename }}
