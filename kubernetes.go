@@ -7,6 +7,7 @@ import (
 	"net/netip"
 	"strings"
 
+	"github.com/miekg/dns"
 	nginx_v1 "github.com/nginxinc/kubernetes-ingress/pkg/apis/configuration/v1"
 	k8s_nginx "github.com/nginxinc/kubernetes-ingress/pkg/client/clientset/versioned"
 	core "k8s.io/api/core/v1"
@@ -335,7 +336,11 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 
 	hostname := service.Name + "." + service.Namespace
 	if annotation, exists := service.Annotations[hostnameAnnotationKey]; exists {
-		hostname = annotation
+		if _, ok := dns.IsDomainName(annotation); ok {
+			hostname = strings.ToLower(annotation)
+		} else {
+			log.Debugf("Invalid domain name in annotation: %s", annotation)
+		}
 	}
 
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
