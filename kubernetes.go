@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"regexp"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -336,10 +337,16 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 
 	hostname := service.Name + "." + service.Namespace
 	if annotation, exists := service.Annotations[hostnameAnnotationKey]; exists {
+		// checking the hostname length limits
 		if _, ok := dns.IsDomainName(annotation); ok {
-			hostname = strings.ToLower(annotation)
+			// checking RFC 1123 conformance (same as metadata labels)
+			if valid := isdns1123Hostname(annotation); valid {
+				hostname = strings.ToLower(annotation)
+			} else {
+				log.Infof("RFC 1123 conformance failed for FQDN: %s", annotation)
+			}
 		} else {
-			log.Debugf("Invalid domain name in annotation: %s", annotation)
+			log.Infof("Invalid FQDN length: %s", annotation)
 		}
 	}
 
@@ -507,4 +514,17 @@ func fetchLoadBalancerIPs(lb core.LoadBalancerStatus) (results []netip.Addr) {
 		}
 	}
 	return
+}
+
+// the below is borrowed from k/k's github repo
+const dns1123ValueFmt string = "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+const dns1123SubdomainFmt string = dns1123ValueFmt + "(\\." + dns1123ValueFmt + ")*"
+
+var dns1123SubdomainRegexp = regexp.MustCompile("^" + dns1123SubdomainFmt + "$")
+
+func isdns1123Hostname(value string) bool {
+	if !dns1123SubdomainRegexp.MatchString(value) {
+		return false
+	}
+	return true
 }
