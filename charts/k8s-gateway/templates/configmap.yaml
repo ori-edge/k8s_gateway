@@ -17,7 +17,7 @@ data:
            fallthrough
         }
         {{- end }}
-        k8s_gateway "{{ required "Delegated domain ('domain') is mandatory " .Values.domain }}" {
+        k8s_gateway {{ required "Delegated domain ('domain') is mandatory " .Values.domain }} {
           apex {{ .Values.apex | default (include "k8s-gateway.fqdn" .) }}
           ttl {{ .Values.ttl }}
           {{- if .Values.secondary }}
