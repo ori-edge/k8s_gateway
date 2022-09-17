@@ -8,7 +8,7 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 
 | Parameter                        | Description                                                                               | Default               |
 | -------------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
-| `domain`                         | Delegated domain                                                                          |                       |
+| `domain`                         | Delegated domain(s)                                                                          |                       |
 | `watchedResources`               | Limit what kind of resources to watch, e.g. `watchedResources: ["Ingress"]`               | `[]`                  |
 | `fallthrough.enabled`            | Enable fallthrough support                                                                | `false`               |
 | `fallthrough.zones`              | List of zones to enable fallthrough on                                                    | `[]`                  |
