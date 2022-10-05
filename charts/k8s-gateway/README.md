@@ -8,7 +8,7 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 
 | Parameter                        | Description                                                                               | Default               |
 | -------------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
-| `domain`                         | Delegated domain(s)                                                                          |                       |
+| `domain`                         | Delegated domain(s)                                                                       |                       |
 | `watchedResources`               | Limit what kind of resources to watch, e.g. `watchedResources: ["Ingress"]`               | `[]`                  |
 | `fallthrough.enabled`            | Enable fallthrough support                                                                | `false`               |
 | `fallthrough.zones`              | List of zones to enable fallthrough on                                                    | `[]`                  |
@@ -31,4 +31,4 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `service.loadBalancerIP`         | The IP address to use when using serviceType `LoadBalancer`                               |                       |
 | `service.clusterIP`              | The IP address to use when using serviceType `ClusterIP`. Randomly chosen by Kubernetes if not provided  |        |
 | `replicaCount`                   | Number of replicas                                                                        | `1`                   |
-| `zoneFile`                       | Inject a custom zone file                                                                 | `{}`                  |
+| `zoneFiles`                      | Inject few custom zone files                                                              | `[]`                  |
