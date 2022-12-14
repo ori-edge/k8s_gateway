@@ -12,7 +12,7 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 | ---- | ---------------- | -------- |
 | HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
-| Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string consisting of lower case alphanumeric characters, '-' or '.', specified in the `coredns.io/hostname` annotation (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/test/service-annotation.yml#L8) for an example) | `.status.loadBalancer.ingress` |
+| Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string consisting of lower case alphanumeric characters, '-' or '.', specified in the `coredns.io/hostname` or `external-dns.alpha.kubernetes.io/hostname` annotations (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/test/service-annotation.yml#L8) for an example) | `.status.loadBalancer.ingress` |
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 

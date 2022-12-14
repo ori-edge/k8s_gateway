@@ -28,13 +28,14 @@ import (
 )
 
 const (
-	defaultResyncPeriod        = 0
-	ingressHostnameIndex       = "ingressHostname"
-	serviceHostnameIndex       = "serviceHostname"
-	gatewayUniqueIndex         = "gatewayIndex"
-	httpRouteHostnameIndex     = "httpRouteHostname"
-	virtualServerHostnameIndex = "virtualServerHostname"
-	hostnameAnnotationKey      = "coredns.io/hostname"
+	defaultResyncPeriod              = 0
+	ingressHostnameIndex             = "ingressHostname"
+	serviceHostnameIndex             = "serviceHostname"
+	gatewayUniqueIndex               = "gatewayIndex"
+	httpRouteHostnameIndex           = "httpRouteHostname"
+	virtualServerHostnameIndex       = "virtualServerHostname"
+	hostnameAnnotationKey            = "coredns.io/hostname"
+	externalDnsHostnameAnnotationKey = "external-dns.alpha.kubernetes.io/hostname"
 )
 
 // KubeController stores the current runtime configuration and cache
@@ -336,23 +337,33 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	}
 
 	hostname := service.Name + "." + service.Namespace
-	if annotation, exists := service.Annotations[hostnameAnnotationKey]; exists {
-		// checking the hostname length limits
-		if _, ok := dns.IsDomainName(annotation); ok {
-			// checking RFC 1123 conformance (same as metadata labels)
-			if valid := isdns1123Hostname(annotation); valid {
-				hostname = strings.ToLower(annotation)
-			} else {
-				log.Infof("RFC 1123 conformance failed for FQDN: %s", annotation)
-			}
-		} else {
-			log.Infof("Invalid FQDN length: %s", annotation)
-		}
+	if annotation, exists := checkServiceAnnotation(hostnameAnnotationKey, service); exists {
+		hostname = annotation
+	} else if annotation, exists := checkServiceAnnotation(externalDnsHostnameAnnotationKey, service); exists {
+		hostname = annotation
 	}
 
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil
+}
+
+func checkServiceAnnotation(annotation string, service *core.Service) (string, bool) {
+	if annotationValue, exists := service.Annotations[annotation]; exists {
+		// checking the hostname length limits
+		if _, ok := dns.IsDomainName(annotationValue); ok {
+			// checking RFC 1123 conformance (same as metadata labels)
+			if valid := isdns1123Hostname(annotationValue); valid {
+				return strings.ToLower(annotationValue), true
+			} else {
+				log.Infof("RFC 1123 conformance failed for FQDN: %s", annotationValue)
+			}
+		} else {
+			log.Infof("Invalid FQDN length: %s", annotationValue)
+		}
+	}
+
+	return "", false
 }
 
 func virtualServerHostnameIndexFunc(obj interface{}) ([]string, error) {
