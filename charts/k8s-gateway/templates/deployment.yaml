@@ -58,9 +58,9 @@ spec:
             items:
             - key: Corefile
               path: Corefile
-            {{- if .Values.zoneFile }}
-            - key: {{ .Values.zoneFile.filename }}
-              path: {{ .Values.zoneFile.filename }}
+            {{ range .Values.zoneFiles }}
+            - key: {{ .filename }}
+              path: {{ .filename }}
             {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
