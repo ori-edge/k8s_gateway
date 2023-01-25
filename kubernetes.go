@@ -388,6 +388,14 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.A
 		for _, obj := range objs {
 			service, _ := obj.(*core.Service)
 
+			if len(service.Spec.ExternalIPs) > 0 {
+				for _, ip := range service.Spec.ExternalIPs {
+					result = append(result, netip.MustParseAddr(ip))
+				}
+				// in case externalIPs are defined, ignoring status field completely
+				return
+			}
+
 			result = append(result, fetchServiceLoadBalancerIPs(service.Status.LoadBalancer.Ingress)...)
 		}
 		return
