@@ -191,9 +191,6 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		} else {
 
 			m.Answer = gw.A(state.Name(), ipv4Addrs)
-			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
-			// See https://github.com/coredns/coredns/pull/3573
-			m.Authoritative = true
 		}
 	case dns.TypeAAAA:
 
@@ -214,16 +211,10 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 		} else {
 
 			m.Answer = gw.AAAA(state.Name(), ipv6Addrs)
-			// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
-			// See https://github.com/coredns/coredns/pull/3573
-			m.Authoritative = true
 		}
 
 	case dns.TypeSOA:
 
-		// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
-		// See https://github.com/coredns/coredns/pull/3573
-		m.Authoritative = true
 		m.Answer = []dns.RR{gw.soa(state)}
 
 	case dns.TypeNS:
@@ -243,6 +234,10 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	default:
 		m.Ns = []dns.RR{gw.soa(state)}
 	}
+
+	// Force to true to fix broken behaviour of legacy glibc `getaddrinfo`.
+	// See https://github.com/coredns/coredns/pull/3573
+	m.Authoritative = true
 
 	if err := w.WriteMsg(m); err != nil {
 		log.Errorf("Failed to send a response: %s", err)
