@@ -388,7 +388,7 @@ func lookupServiceIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.A
 		for _, obj := range objs {
 			service, _ := obj.(*core.Service)
 
-			result = append(result, fetchLoadBalancerIPs(service.Status.LoadBalancer)...)
+			result = append(result, fetchServiceLoadBalancerIPs(service.Status.LoadBalancer.Ingress)...)
 		}
 		return
 	}
@@ -465,7 +465,7 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.A
 		for _, obj := range objs {
 			ingress, _ := obj.(*networking.Ingress)
 
-			result = append(result, fetchLoadBalancerIPs(ingress.Status.LoadBalancer)...)
+			result = append(result, fetchIngressLoadBalancerIPs(ingress.Status.LoadBalancer.Ingress)...)
 		}
 
 		return
@@ -501,8 +501,36 @@ func fetchGatewayIPs(gw *gatewayapi_v1alpha2.Gateway) (results []netip.Addr) {
 	return
 }
 
-func fetchLoadBalancerIPs(lb core.LoadBalancerStatus) (results []netip.Addr) {
-	for _, address := range lb.Ingress {
+func fetchServiceLoadBalancerIPs(ingresses []core.LoadBalancerIngress) (results []netip.Addr) {
+
+	for _, address := range ingresses {
+		if address.Hostname != "" {
+			log.Debugf("Looking up hostname %s", address.Hostname)
+			ips, err := net.LookupIP(address.Hostname)
+			if err != nil {
+				continue
+			}
+			for _, ip := range ips {
+				addr, err := netip.ParseAddr(ip.String())
+				if err != nil {
+					continue
+				}
+				results = append(results, addr)
+			}
+		} else if address.IP != "" {
+			addr, err := netip.ParseAddr(address.IP)
+			if err != nil {
+				continue
+			}
+			results = append(results, addr)
+		}
+	}
+	return
+}
+
+func fetchIngressLoadBalancerIPs(ingresses []networking.IngressLoadBalancerIngress) (results []netip.Addr) {
+
+	for _, address := range ingresses {
 		if address.Hostname != "" {
 			log.Debugf("Looking up hostname %s", address.Hostname)
 			ips, err := net.LookupIP(address.Hostname)

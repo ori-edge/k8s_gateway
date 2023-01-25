@@ -45,12 +45,20 @@ func TestController(t *testing.T) {
 		if !isFound(index, found) {
 			t.Errorf("Ingress key %s not found in index: %v", index, found)
 		}
+		ips := fetchIngressLoadBalancerIPs(testObj.Status.LoadBalancer.Ingress)
+		if len(ips) != 1 {
+			t.Errorf("Unexpected number of IPs found %d", len(ips))
+		}
 	}
 
 	for index, testObj := range testServices {
 		found, _ := serviceHostnameIndexFunc(testObj)
 		if !isFound(index, found) {
 			t.Errorf("Service key %s not found in index: %v", index, found)
+		}
+		ips := fetchServiceLoadBalancerIPs(testObj.Status.LoadBalancer.Ingress)
+		if len(ips) != 1 {
+			t.Errorf("Unexpected number of IPs found %d", len(ips))
 		}
 	}
 
@@ -156,8 +164,8 @@ var testIngresses = map[string]*networking.Ingress{
 			},
 		},
 		Status: networking.IngressStatus{
-			LoadBalancer: core.LoadBalancerStatus{
-				Ingress: []core.LoadBalancerIngress{
+			LoadBalancer: networking.IngressLoadBalancerStatus{
+				Ingress: []networking.IngressLoadBalancerIngress{
 					{IP: "192.0.0.1"},
 				},
 			},
@@ -172,8 +180,8 @@ var testIngresses = map[string]*networking.Ingress{
 			},
 		},
 		Status: networking.IngressStatus{
-			LoadBalancer: core.LoadBalancerStatus{
-				Ingress: []core.LoadBalancerIngress{
+			LoadBalancer: networking.IngressLoadBalancerStatus{
+				Ingress: []networking.IngressLoadBalancerIngress{
 					{IP: "192.0.0.2"},
 				},
 			},
