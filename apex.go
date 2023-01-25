@@ -13,6 +13,7 @@ func (gw *Gateway) serveSubApex(state request.Request) (int, error) {
 
 	m := new(dns.Msg)
 	m.SetReply(state.Req)
+	m.Authoritative = true
 
 	// base is gw.apex, if it's longer return nxdomain
 	switch labels := dns.CountLabel(base); labels {
