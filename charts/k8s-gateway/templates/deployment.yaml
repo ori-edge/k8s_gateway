@@ -32,7 +32,16 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         ports:
-        - {containerPort: 1053, protocol: UDP, name: dns-udp}
+        - containerPort: 1053
+          name: dns-udp
+          protocol: UDP
+        {{- range .Values.extraZonePlugins | uniq }}
+        {{- if eq .name "prometheus" -}}
+        - containerPort: {{ .parameters | regexFind "[^\\:]*$" }}
+          name: metrics
+          protocol: TCP
+        {{- end }}
+        {{ end }}
         livenessProbe:
           httpGet:
             path: /health
