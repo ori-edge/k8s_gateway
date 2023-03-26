@@ -570,8 +570,5 @@ const dns1123SubdomainFmt string = dns1123ValueFmt + "(\\." + dns1123ValueFmt + 
 var dns1123SubdomainRegexp = regexp.MustCompile("^" + dns1123SubdomainFmt + "$")
 
 func isdns1123Hostname(value string) bool {
-	if !dns1123SubdomainRegexp.MatchString(value) {
-		return false
-	}
-	return true
+	return dns1123SubdomainRegexp.MatchString(value)
 }
