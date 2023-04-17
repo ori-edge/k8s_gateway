@@ -38,6 +38,10 @@ helm-update:
 test:
 	go test -race ./... -short
 
+.PHONY: ci
+ci:
+	 golangci-lint run  --timeout=2m30s
+
 clean:
 	go clean
 	rm -f coredns
