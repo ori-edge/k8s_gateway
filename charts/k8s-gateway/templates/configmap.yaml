@@ -31,8 +31,7 @@ data:
           {{- end }}
         }
         {{- range .Values.extraZonePlugins }}
-        {{ .name }}{{ if .parameters }} {{ .parameters }}{{ end }}{{ if .configBlock }} {
-          {{ .configBlock | indent 2 }}
+        {{ .name }}{{ if .parameters }} {{ .parameters }}{{ end }}{{ if .configBlock }} { {{ .configBlock | nindent 10 }}
         }{{ end }}
         {{- end }}
         {{- range .Values.zoneFiles }}
