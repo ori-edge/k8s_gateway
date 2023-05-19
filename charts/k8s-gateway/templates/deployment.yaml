@@ -36,12 +36,12 @@ spec:
           name: dns-udp
           protocol: UDP
         {{- range .Values.extraZonePlugins | uniq }}
-        {{- if eq .name "prometheus" -}}
+        {{- if eq .name "prometheus" }}
         - containerPort: {{ .parameters | regexFind "[^\\:]*$" }}
           name: metrics
           protocol: TCP
         {{- end }}
-        {{ end }}
+        {{- end }}
         livenessProbe:
           httpGet:
             path: /health
@@ -67,10 +67,10 @@ spec:
             items:
             - key: Corefile
               path: Corefile
-            {{ range .Values.zoneFiles }}
+            {{- range .Values.zoneFiles }}
             - key: {{ .filename }}
               path: {{ .filename }}
-            {{ end }}
+            {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
