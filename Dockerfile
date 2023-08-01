@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM} docker.io/library/golang:1.20.4 as builder
+FROM --platform=${BUILDPLATFORM} docker.io/library/golang:1.20.7 as builder
 
 ARG LDFLAGS
 
