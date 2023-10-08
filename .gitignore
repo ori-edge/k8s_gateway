@@ -1,3 +1,4 @@
+vendor
 coredns
 tilt_modules
 .helm
