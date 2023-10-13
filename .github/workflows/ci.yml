@@ -14,13 +14,13 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: 1.18.x
+          go-version: 1.21.x
       - name: Checkout code
         uses: actions/checkout@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.52.2
+          version: v1.54.2
           args: --timeout=2m30s
 
   unit-test:
@@ -28,6 +28,6 @@ jobs:
     steps:
       - uses: actions/setup-go@v2
         with:
-          go-version: 1.18.x
+          go-version: 1.21.x
       - uses: actions/checkout@v2
       - run: make test

@@ -57,8 +57,8 @@ helm_remote('nginx-ingress',
 
 
 # Gateway API
-k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1alpha2')
-k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1alpha2')
+k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1beta1')
+k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1beta1')
 k8s_yaml('./test/gateway-api/crds.yml')
 
 
