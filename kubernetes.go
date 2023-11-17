@@ -13,7 +13,6 @@ import (
 	k8s_nginx "github.com/nginxinc/kubernetes-ingress/pkg/client/clientset/versioned"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -199,7 +198,7 @@ func existVirtualServerCRDs(ctx context.Context, c *k8s_nginx.Clientset) bool {
 }
 
 func handleCRDCheckError(err error, resourceName string, apiGroup string) bool {
-	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || errors.IsNotFound(err) {
+	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || apierrors.IsNotFound(err) {
 		log.Infof("%s CRDs are not found. Not syncing %s resources.", resourceName, resourceName)
 		return false
 	}
