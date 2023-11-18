@@ -13,8 +13,13 @@ import (
 )
 
 func setupEmptyLookupFuncs() {
-
 	if resource := lookupResource("HTTPRoute"); resource != nil {
+		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
+	}
+	if resource := lookupResource("TLSRoute"); resource != nil {
+		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
+	}
+	if resource := lookupResource("GRPCRoute"); resource != nil {
 		resource.lookup = func(_ []string) []netip.Addr { return []netip.Addr{} }
 	}
 	if resource := lookupResource("Ingress"); resource != nil {
@@ -26,7 +31,6 @@ func setupEmptyLookupFuncs() {
 }
 
 func TestDualNS(t *testing.T) {
-
 	ctrl := &KubeController{hasSynced: true}
 	gw := newGateway()
 	gw.Zones = []string{"example.com."}

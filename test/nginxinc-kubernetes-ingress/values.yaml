@@ -1,3 +1,4 @@
 controller:
   enableCustomResources: true
-  ingressClass: nginxinc
+  ingressClass:
+    name: nginxinc

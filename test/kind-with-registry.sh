@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Adapted from:
 # https://github.com/kubernetes-sigs/kind/commits/master/site/static/examples/kind-with-registry.sh
@@ -62,6 +62,7 @@ nodes:
     protocol: UDP
 networking:
   ipFamily: dual
+  disableDefaultCNI: true
 EOF
 
 cat <<EOF | kubectl apply -f -

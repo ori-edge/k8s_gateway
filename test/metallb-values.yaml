@@ -1,7 +1,0 @@
-configInline:
-  address-pools:
-   - name: default
-     protocol: layer2
-     addresses:
-     - 198.51.100.0/24
-     - fd12:3456:789a:1::/64

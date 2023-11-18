@@ -17,10 +17,9 @@ spec:
         app: backend
     spec:
       containers:
-      - image: nginx
-        imagePullPolicy: Always
-        name: nginx
-
+        - image: nginx
+          imagePullPolicy: Always
+          name: nginx
 ---
 apiVersion: v1
 kind: Service
@@ -29,9 +28,9 @@ metadata:
   namespace: default
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 80
+    - port: 80
+      protocol: TCP
+      targetPort: 80
   selector:
     app: backend
   sessionAffinity: None

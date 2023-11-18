@@ -4,6 +4,12 @@ image:
   repository: coredns
   tag: latest
 
+watchedResources:
+  - HTTPRoute
+  - TLSRoute
+  - GRPCRoute
+  - Ingress
+  - Service
 # Delegated domain
 domain: "foo.org"
 
@@ -16,7 +22,6 @@ service:
   # externalTrafficPolicy: Local
   # externalIPs:
   #  - 192.168.1.3
-  ipFamilyPolicy: RequireDualStack
 
 debug:
   enabled: true

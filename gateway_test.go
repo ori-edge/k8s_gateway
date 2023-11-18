@@ -26,7 +26,7 @@ type Fallen struct {
 }
 
 func TestLookup(t *testing.T) {
-	real := []string{"Ingress", "Service", "HTTPRoute", "VirtualServer"}
+	real := []string{"Ingress", "Service", "HTTPRoute", "TLSRoute", "GRPCRoute", "VirtualServer"}
 	fake := []string{"Pod", "Gateway"}
 
 	for _, resource := range real {
@@ -97,10 +97,10 @@ func TestPluginFallthrough(t *testing.T) {
 		_, err := gw.ServeDNS(ctx, w, r)
 
 		if errors.As(err, &Fallen{}) && !tc.FallthroughExpected {
-			t.Fatalf("Test %d query resulted unexpectidly in a fall through instead of a response", i)
+			t.Fatalf("Test %d query resulted unexpectedly in a fall through instead of a response", i)
 		}
 		if err == nil && tc.FallthroughExpected {
-			t.Fatalf("Test %d query resulted unexpectidly in a response instead of a fall through", i)
+			t.Fatalf("Test %d query resulted unexpectedly in a response instead of a fall through", i)
 		}
 	}
 }
@@ -307,14 +307,14 @@ func testVirtualServerLookup(keys []string) (results []netip.Addr) {
 	return results
 }
 
-var testHTTPRouteIndexes = map[string][]netip.Addr{
+var testRouteIndexes = map[string][]netip.Addr{
 	"domain.gw.example.com": {netip.MustParseAddr("192.0.2.1")},
 	"shadow.example.com":    {netip.MustParseAddr("192.0.2.4")},
 }
 
-func testHTTPRouteLookup(keys []string) (results []netip.Addr) {
+func testRouteLookup(keys []string) (results []netip.Addr) {
 	for _, key := range keys {
-		results = append(results, testHTTPRouteIndexes[strings.ToLower(key)]...)
+		results = append(results, testRouteIndexes[strings.ToLower(key)]...)
 	}
 	return results
 }
@@ -330,6 +330,12 @@ func setupLookupFuncs() {
 		resource.lookup = testVirtualServerLookup
 	}
 	if resource := lookupResource("HTTPRoute"); resource != nil {
-		resource.lookup = testHTTPRouteLookup
+		resource.lookup = testRouteLookup
+	}
+	if resource := lookupResource("TLSRoute"); resource != nil {
+		resource.lookup = testRouteLookup
+	}
+	if resource := lookupResource("GRPCRoute"); resource != nil {
+		resource.lookup = testRouteLookup
 	}
 }

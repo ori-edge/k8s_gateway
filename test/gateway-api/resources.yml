@@ -5,15 +5,15 @@ metadata:
   name: gateway-one
   namespace: default
 spec:
-  gatewayClassName: "istio"
+  gatewayClassName: istio
   listeners:
-  - name: default
-    hostname: "*.gw.foo.org"
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: All
+    - name: default
+      hostname: "*.gw.foo.org"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
@@ -21,15 +21,15 @@ metadata:
   name: gateway-two
   namespace: default
 spec:
-  gatewayClassName: "istio"
+  gatewayClassName: istio
   listeners:
-  - name: default
-    hostname: "*.gw.foo.org"
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: All
+    - name: default
+      hostname: "*.gw.foo.org"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -38,16 +38,16 @@ metadata:
   namespace: default
 spec:
   parentRefs:
-  - name: gateway-one
+    - name: gateway-one
   hostnames: ["myservicea.gw.foo.org"]
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: backend
-      port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 80
 
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -57,17 +57,17 @@ metadata:
   namespace: kube-system
 spec:
   parentRefs:
-  - name: gateway-one
-    namespace: default
+    - name: gateway-one
+      namespace: default
   hostnames: ["myserviceb.gw.foo.org"]
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: backend
-      port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 80
 
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -77,17 +77,17 @@ metadata:
   namespace: kube-system
 spec:
   parentRefs:
-  - name: gatewayWrong
-    namespace: default
+    - name: gatewayWrong
+      namespace: default
   hostnames: ["myservicec.gw.foo.org"]
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: backend
-      port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 80
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
@@ -96,14 +96,50 @@ metadata:
   namespace: default
 spec:
   parentRefs:
-  - name: gateway-one
-  - name: gateway-two
+    - name: gateway-one
+    - name: gateway-two
   hostnames: ["myserviced.gw.foo.org"]
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /
-    backendRefs:
-    - name: backend
-      port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: myservicetls
+  namespace: default
+spec:
+  parentRefs:
+    - name: gateway-one
+  hostnames: ["myservicetls.gw.foo.org"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: GRPCRoute
+metadata:
+  name: myservicegrpc
+  namespace: default
+spec:
+  parentRefs:
+    - name: gateway-one
+  hostnames: ["myservicegrpc.gw.foo.org"]
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 443

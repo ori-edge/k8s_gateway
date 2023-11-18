@@ -1,20 +1,20 @@
 allow_k8s_contexts('colima')
 allow_k8s_contexts('local')
 
-# using others with the makefile
-load('ext://restart_process', 'docker_build_with_restart')
+# using lima
+load('ext://nerdctl', 'nerdctl_build')
 load('ext://helm_remote', 'helm_remote')
 
 IMG = 'localhost:5000/coredns'
 
 def binary():
-    return "CGO_ENABLED=0  GOOS=linux GOARCH=amd64 GO111MODULE=on go build cmd/coredns.go"
+    return "CGO_ENABLED=0  GOOS=linux GOARCH=arm64 GO111MODULE=on go build cmd/coredns.go"
 
 local_resource('recompile', binary(), deps=['cmd', 'gateway.go', 'kubernetes.go', 'setup.go', 'apex.go'])
 
-
-docker_build_with_restart(IMG, '.',
-    dockerfile='tilt.Dockerfile',
+# if using mac m1+, you'll need to use colima
+nerdctl_build(IMG, '.',
+    dockerfile='tilt.Dockerfile', 
     entrypoint=['/coredns'], 
     live_update=[
         sync('./coredns', '/coredns'),
@@ -28,15 +28,14 @@ helm_remote('cilium',
             repo_name='cilium',
             values=['./test/cilium/helm-values.yaml'],
             repo_url='https://helm.cilium.io')
-k8s_yaml('./test/cilium/dual-stack/crd-values.yaml')
-
+k8s_yaml('./test/cilium/single-stack/crd-values.yaml')
 
 # CoreDNS with updated RBAC
 k8s_yaml(helm(
     './charts/k8s-gateway',
     namespace="kube-system",
     name='excoredns',
-    values=['./test/dual-stack/k8s-gateway-values.yaml'],
+    values=['./test/single-stack/k8s-gateway-values.yaml'],
     )
 )
 
@@ -80,5 +79,5 @@ k8s_kind('GRPCRoute', api_version='gateway.networking.k8s.io/v1alpha2')
 k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1beta1')
 k8s_yaml('./test/gateway-api/resources.yml')
 k8s_yaml('./test/gatewayclasses.yaml')
-k8s_yaml('./test/dual-stack/service-annotation.yml')
-k8s_yaml('./test/dual-stack/ingress-services.yml')
+k8s_yaml('./test/single-stack/service-annotation.yml')
+k8s_yaml('./test/single-stack/ingress-services.yml')
