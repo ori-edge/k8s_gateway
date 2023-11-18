@@ -14,8 +14,8 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	gatewayapi_v1 "sigs.k8s.io/gateway-api/apis/v1"
 	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	gatewayapi_v1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 	gwFake "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned/fake"
 )
@@ -150,7 +150,7 @@ func addVirtualServers(client k8s_nginx.Interface) {
 func addGateways(client gatewayClient.Interface) {
 	ctx := context.TODO()
 	for _, gw := range testGateways {
-		_, err := client.GatewayV1beta1().Gateways("ns1").Create(ctx, gw, meta.CreateOptions{})
+		_, err := client.GatewayV1().Gateways("ns1").Create(ctx, gw, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create a Gateway Object :%s", err)
 		}
@@ -160,7 +160,7 @@ func addGateways(client gatewayClient.Interface) {
 func addHTTPRoutes(client gatewayClient.Interface) {
 	ctx := context.TODO()
 	for _, r := range testHTTPRoutes {
-		_, err := client.GatewayV1beta1().HTTPRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		_, err := client.GatewayV1().HTTPRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create a HTTPRoute Object :%s", err)
 		}
@@ -297,15 +297,15 @@ var testVirtualServers = map[string]*nginx.VirtualServer{
 	},
 }
 
-var testGateways = map[string]*gatewayapi_v1beta1.Gateway{
+var testGateways = map[string]*gatewayapi_v1.Gateway{
 	"ns1/gw-1": {
 		ObjectMeta: meta.ObjectMeta{
 			Name:      "gw-1",
 			Namespace: "ns1",
 		},
-		Spec: gatewayapi_v1beta1.GatewaySpec{},
-		Status: gatewayapi_v1beta1.GatewayStatus{
-			Addresses: []gatewayapi_v1beta1.GatewayStatusAddress{
+		Spec: gatewayapi_v1.GatewaySpec{},
+		Status: gatewayapi_v1.GatewayStatus{
+			Addresses: []gatewayapi_v1.GatewayStatusAddress{
 				{
 					Value: "192.0.2.100",
 				},
@@ -320,15 +320,15 @@ var testGateways = map[string]*gatewayapi_v1beta1.Gateway{
 	},
 }
 
-var testHTTPRoutes = map[string]*gatewayapi_v1beta1.HTTPRoute{
+var testHTTPRoutes = map[string]*gatewayapi_v1.HTTPRoute{
 	"route-1.gw-1.example.com": {
 		ObjectMeta: meta.ObjectMeta{
 			Name:      "route-1",
 			Namespace: "ns1",
 		},
-		Spec: gatewayapi_v1beta1.HTTPRouteSpec{
-			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
-			Hostnames: []gatewayapi_v1beta1.Hostname{"route-1.gw-1.example.com"},
+		Spec: gatewayapi_v1.HTTPRouteSpec{
+			//ParentRefs: []gatewayapi_v1.ParentRef{},
+			Hostnames: []gatewayapi_v1.Hostname{"route-1.gw-1.example.com"},
 		},
 	},
 }
@@ -340,7 +340,7 @@ var testTLSRoutes = map[string]*gatewayapi_v1alpha2.TLSRoute{
 			Namespace: "ns1",
 		},
 		Spec: gatewayapi_v1alpha2.TLSRouteSpec{
-			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
+			//ParentRefs: []gatewayapi_v1.ParentRef{},
 			Hostnames: []gatewayapi_v1alpha2.Hostname{
 				"route-1.gw-1.example.com",
 			},
@@ -355,7 +355,7 @@ var testGRPCRoutes = map[string]*gatewayapi_v1alpha2.GRPCRoute{
 			Namespace: "ns1",
 		},
 		Spec: gatewayapi_v1alpha2.GRPCRouteSpec{
-			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
+			//ParentRefs: []gatewayapi_v1.ParentRef{},
 			Hostnames: []gatewayapi_v1alpha2.Hostname{"route-1.gw-1.example.com"},
 		},
 	},

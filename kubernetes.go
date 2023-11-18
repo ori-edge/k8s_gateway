@@ -22,8 +22,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	gatewayapi_v1 "sigs.k8s.io/gateway-api/apis/v1"
 	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	gatewayapi_v1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 )
 
@@ -64,7 +64,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 				ListFunc:  gatewayLister(ctx, ctrl.gwClient, core.NamespaceAll),
 				WatchFunc: gatewayWatcher(ctx, ctrl.gwClient, core.NamespaceAll),
 			},
-			&gatewayapi_v1beta1.Gateway{},
+			&gatewayapi_v1.Gateway{},
 			defaultResyncPeriod,
 			cache.Indexers{gatewayUniqueIndex: gatewayIndexFunc},
 		)
@@ -76,7 +76,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 					ListFunc:  httpRouteLister(ctx, ctrl.gwClient, core.NamespaceAll),
 					WatchFunc: httpRouteWatcher(ctx, ctrl.gwClient, core.NamespaceAll),
 				},
-				&gatewayapi_v1beta1.HTTPRoute{},
+				&gatewayapi_v1.HTTPRoute{},
 				defaultResyncPeriod,
 				cache.Indexers{httpRouteHostnameIndex: httpRouteHostnameIndexFunc},
 			)
@@ -217,7 +217,7 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 }
 
 func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
-	_, err := c.GatewayV1beta1().Gateways("").List(ctx, metav1.ListOptions{})
+	_, err := c.GatewayV1().Gateways("").List(ctx, metav1.ListOptions{})
 	return handleCRDCheckError(err, "GatewayAPI", "gateway.networking.k8s.io")
 }
 
@@ -259,7 +259,7 @@ func (gw *Gateway) getClientConfig() (*rest.Config, error) {
 
 func httpRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.GatewayV1beta1().HTTPRoutes(ns).List(ctx, opts)
+		return c.GatewayV1().HTTPRoutes(ns).List(ctx, opts)
 	}
 }
 
@@ -277,7 +277,7 @@ func grpcRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) 
 
 func gatewayLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.GatewayV1beta1().Gateways(ns).List(ctx, opts)
+		return c.GatewayV1().Gateways(ns).List(ctx, opts)
 	}
 }
 
@@ -301,7 +301,7 @@ func virtualServerLister(ctx context.Context, c k8s_nginx.Interface, ns string) 
 
 func httpRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
-		return c.GatewayV1beta1().HTTPRoutes(ns).Watch(ctx, opts)
+		return c.GatewayV1().HTTPRoutes(ns).Watch(ctx, opts)
 	}
 }
 
@@ -319,7 +319,7 @@ func grpcRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string)
 
 func gatewayWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
-		return c.GatewayV1beta1().Gateways(ns).Watch(ctx, opts)
+		return c.GatewayV1().Gateways(ns).Watch(ctx, opts)
 	}
 }
 
@@ -351,7 +351,7 @@ func gatewayIndexFunc(obj interface{}) ([]string, error) {
 }
 
 func httpRouteHostnameIndexFunc(obj interface{}) ([]string, error) {
-	httpRoute, ok := obj.(*gatewayapi_v1beta1.HTTPRoute)
+	httpRoute, ok := obj.(*gatewayapi_v1.HTTPRoute)
 	if !ok {
 		return []string{}, nil
 	}
@@ -515,7 +515,7 @@ func lookupHttpRouteIndex(http, gw cache.SharedIndexInformer) func([]string) []n
 		log.Debugf("Found %d matching httpRoute objects", len(objs))
 
 		for _, obj := range objs {
-			httpRoute, _ := obj.(*gatewayapi_v1beta1.HTTPRoute)
+			httpRoute, _ := obj.(*gatewayapi_v1.HTTPRoute)
 			result = append(result, lookupGateways(gw, httpRoute.Spec.ParentRefs, httpRoute.Namespace)...)
 		}
 		return
@@ -556,7 +556,7 @@ func lookupGRPCRouteIndex(grpc, gw cache.SharedIndexInformer) func([]string) []n
 	}
 }
 
-func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1beta1.ParentReference, ns string) (result []netip.Addr) {
+func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1.ParentReference, ns string) (result []netip.Addr) {
 	for _, gwRef := range refs {
 
 		if gwRef.Namespace != nil {
@@ -568,7 +568,7 @@ func lookupGateways(gw cache.SharedIndexInformer, refs []gatewayapi_v1beta1.Pare
 		log.Debugf("Found %d matching gateway objects", len(gwObjs))
 
 		for _, gwObj := range gwObjs {
-			gw, _ := gwObj.(*gatewayapi_v1beta1.Gateway)
+			gw, _ := gwObj.(*gatewayapi_v1.Gateway)
 			result = append(result, fetchGatewayIPs(gw)...)
 		}
 	}
@@ -593,9 +593,9 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.A
 	}
 }
 
-func fetchGatewayIPs(gw *gatewayapi_v1beta1.Gateway) (results []netip.Addr) {
+func fetchGatewayIPs(gw *gatewayapi_v1.Gateway) (results []netip.Addr) {
 	for _, addr := range gw.Status.Addresses {
-		if *addr.Type == gatewayapi_v1beta1.IPAddressType {
+		if *addr.Type == gatewayapi_v1.IPAddressType {
 			addr, err := netip.ParseAddr(addr.Value)
 			if err != nil {
 				continue
@@ -604,7 +604,7 @@ func fetchGatewayIPs(gw *gatewayapi_v1beta1.Gateway) (results []netip.Addr) {
 			continue
 		}
 
-		if *addr.Type == gatewayapi_v1beta1.HostnameAddressType {
+		if *addr.Type == gatewayapi_v1.HostnameAddressType {
 			ips, err := net.LookupIP(addr.Value)
 			if err != nil {
 				continue
