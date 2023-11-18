@@ -28,6 +28,14 @@ var orderedResources = []*resourceWithIndex{
 		lookup: noop,
 	},
 	{
+		name:   "TLSRoute",
+		lookup: noop,
+	},
+	{
+		name:   "GRPCRoute",
+		lookup: noop,
+	},
+	{
 		name:   "VirtualServer",
 		lookup: noop,
 	},

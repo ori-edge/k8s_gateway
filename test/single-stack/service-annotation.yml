@@ -7,12 +7,11 @@ metadata:
   annotations:
     "coredns.io/hostname": "good.ok"
 spec:
-  ipFamilyPolicy: RequireDualStack
   ports:
-  - name: 80-80
-    port: 80
-    protocol: TCP
-    targetPort: 80
+    - name: 80-80
+      port: 80
+      protocol: TCP
+      targetPort: 80
   selector:
     app: backend
   sessionAffinity: None
@@ -26,12 +25,11 @@ metadata:
   annotations:
     "coredns.io/hostname": "abcd0123456789012345678901234567890123456789012345678901234567890"
 spec:
-  ipFamilyPolicy: RequireDualStack
   ports:
-  - name: 80-80
-    port: 80
-    protocol: TCP
-    targetPort: 80
+    - name: 80-80
+      port: 80
+      protocol: TCP
+      targetPort: 80
   selector:
     app: backend
   sessionAffinity: None
@@ -45,12 +43,11 @@ metadata:
   annotations:
     "coredns.io/hostname": "foo_bar"
 spec:
-  ipFamilyPolicy: RequireDualStack
   ports:
-  - name: 80-80
-    port: 80
-    protocol: TCP
-    targetPort: 80
+    - name: 80-80
+      port: 80
+      protocol: TCP
+      targetPort: 80
   selector:
     app: backend
   sessionAffinity: None

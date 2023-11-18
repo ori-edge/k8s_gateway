@@ -1,0 +1,24 @@
+nameOverride: k8s-gateway
+image:
+  registry: localhost:5000
+  repository: coredns
+  tag: latest
+
+# Delegated domain
+domain: "foo.org"
+
+service:
+  type: NodePort
+  port: 53
+  annotations: {}
+  nodePort: 32553
+  # loadBalancerIP: 192.168.1.2
+  # externalTrafficPolicy: Local
+  # externalIPs:
+  #  - 192.168.1.3
+  ipFamilyPolicy: RequireDualStack
+
+debug:
+  enabled: true
+
+secure: false

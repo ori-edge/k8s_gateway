@@ -14,6 +14,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gatewayapi_v1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
 	gwFake "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned/fake"
@@ -33,6 +34,8 @@ func TestController(t *testing.T) {
 	addIngresses(client)
 	addGateways(gwClient)
 	addHTTPRoutes(gwClient)
+	addTLSRoutes(gwClient)
+	addGRPCRoutes(gwClient)
 	addVirtualServers(nginxClient)
 
 	gw := newGateway()
@@ -80,6 +83,20 @@ func TestController(t *testing.T) {
 		found, _ := httpRouteHostnameIndexFunc(testObj)
 		if !isFound(index, found) {
 			t.Errorf("HTTPRoute key %s not found in index: %v", index, found)
+		}
+	}
+
+	for index, testObj := range testTLSRoutes {
+		found, _ := tlsRouteHostnameIndexFunc(testObj)
+		if !isFound(index, found) {
+			t.Errorf("TLSRoute key %s not found in index: %v", index, found)
+		}
+	}
+
+	for index, testObj := range testGRPCRoutes {
+		found, _ := grpcRouteHostnameIndexFunc(testObj)
+		if !isFound(index, found) {
+			t.Errorf("GRPC key %s not found in index: %v", index, found)
 		}
 	}
 
@@ -146,6 +163,26 @@ func addHTTPRoutes(client gatewayClient.Interface) {
 		_, err := client.GatewayV1beta1().HTTPRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create a HTTPRoute Object :%s", err)
+		}
+	}
+}
+
+func addTLSRoutes(client gatewayClient.Interface) {
+	ctx := context.TODO()
+	for _, r := range testTLSRoutes {
+		_, err := client.GatewayV1alpha2().TLSRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create a TLSRoutes Object :%s", err)
+		}
+	}
+}
+
+func addGRPCRoutes(client gatewayClient.Interface) {
+	ctx := context.TODO()
+	for _, r := range testGRPCRoutes {
+		_, err := client.GatewayV1alpha2().GRPCRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create a GRPC Object :%s", err)
 		}
 	}
 }
@@ -292,6 +329,34 @@ var testHTTPRoutes = map[string]*gatewayapi_v1beta1.HTTPRoute{
 		Spec: gatewayapi_v1beta1.HTTPRouteSpec{
 			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
 			Hostnames: []gatewayapi_v1beta1.Hostname{"route-1.gw-1.example.com"},
+		},
+	},
+}
+
+var testTLSRoutes = map[string]*gatewayapi_v1alpha2.TLSRoute{
+	"route-1.gw-1.example.com": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "route-1",
+			Namespace: "ns1",
+		},
+		Spec: gatewayapi_v1alpha2.TLSRouteSpec{
+			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
+			Hostnames: []gatewayapi_v1alpha2.Hostname{
+				"route-1.gw-1.example.com",
+			},
+		},
+	},
+}
+
+var testGRPCRoutes = map[string]*gatewayapi_v1alpha2.GRPCRoute{
+	"route-1.gw-1.example.com": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "route-1",
+			Namespace: "ns1",
+		},
+		Spec: gatewayapi_v1alpha2.GRPCRouteSpec{
+			//ParentRefs: []gatewayapi_v1beta1.ParentRef{},
+			Hostnames: []gatewayapi_v1alpha2.Hostname{"route-1.gw-1.example.com"},
 		},
 	},
 }

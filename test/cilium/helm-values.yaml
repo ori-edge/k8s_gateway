@@ -1,0 +1,58 @@
+bpf:
+  masquerade: true
+cluster:
+  name: local
+containerRuntime:
+  integration: containerd
+endpointRoutes:
+  enabled: true
+enableCiliumEndpointSlice: true
+ingressController:
+  enabled: true
+  loadBalancerMode: shared
+gatewayAPI:
+  enabled: true
+l7Proxy: true
+l2announcements:
+  enabled: true
+ipv4NativeRoutingCIDR: 10.42.0.0/16
+ipam:
+  mode: "cluster-pool"
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - "10.43.0.0/16"
+    clusterPoolIPv4MaskSize: 24
+    # clusterPoolIPv6PodCIDRList:
+    #   - "fd00::/104"
+    # clusterPoolIPv6MaskSize: 120
+kubeProxyReplacement: true
+kubeProxyReplacementHealthzBindAddr: 0.0.0.0:10256
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 6443
+localRedirectPolicy: true
+operator:
+  replicas: 1
+  rollOutPods: true
+rollOutCiliumPods: true
+securityContext:
+  privileged: true
+  capabilities:
+    ciliumAgent:
+      - PERFMON
+      - BPF
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUI
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+tunnel: disabled

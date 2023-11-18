@@ -31,22 +31,29 @@ kind: ClusterRole
 metadata:
   name: excoredns
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - services
-  - namespaces
-  verbs:
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  - networking.k8s.io
-  resources:
-  - ingresses
-  verbs:
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - namespaces
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - "*"
+    verbs:
+      - watch
+      - list
 ---
 # Source: coredns/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -58,9 +65,9 @@ roleRef:
   kind: ClusterRole
   name: excoredns
 subjects:
-- kind: ServiceAccount
-  name: excoredns
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: excoredns
+    namespace: kube-system
 ---
 apiVersion: v1
 kind: Service
@@ -71,7 +78,7 @@ spec:
   selector:
     k8s-app: "excoredns"
   ports:
-  - {port: 53, protocol: UDP, name: udp-53}
+    - { port: 53, protocol: UDP, name: udp-53 }
   type: LoadBalancer
 ---
 apiVersion: apps/v1
@@ -92,27 +99,27 @@ spec:
       serviceAccountName: excoredns
       dnsPolicy: ClusterFirst
       containers:
-      - name: "coredns"
-        image: "quay.io/oriedge/k8s_gateway"
-        imagePullPolicy: IfNotPresent
-        args: [ "-conf", "/etc/coredns/Corefile" ]
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/coredns
-        resources:
-          limits:
-            cpu: 100m
-            memory: 128Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        ports:
-        - {containerPort: 53, protocol: UDP, name: udp-53}
-        - {containerPort: 53, protocol: TCP, name: tcp-53}
+        - name: "coredns"
+          image: "quay.io/oriedge/k8s_gateway"
+          imagePullPolicy: IfNotPresent
+          args: ["-conf", "/etc/coredns/Corefile"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/coredns
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            - { containerPort: 53, protocol: UDP, name: udp-53 }
+            - { containerPort: 53, protocol: TCP, name: tcp-53 }
       volumes:
         - name: config-volume
           configMap:
             name: excoredns
             items:
-            - key: Corefile
-              path: Corefile
+              - key: Corefile
+                path: Corefile

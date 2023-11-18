@@ -1,6 +1,6 @@
 # k8s_gateway
 
-A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer and HTTPRoutes from the [Gateway API project](https://gateway-api.sigs.k8s.io/). 
+A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer, HTTPRoutes, TLSRoutes, GRPCRoutes from the [Gateway API project](https://gateway-api.sigs.k8s.io/).
 
 This plugin relies on its own connection to the k8s API server and doesn't share any code with the existing [kubernetes](https://coredns.io/plugins/kubernetes/) plugin. The assumption is that this plugin can now be deployed as a separate instance (alongside the internal kube-dns) and act as a single external DNS interface into your Kubernetes cluster(s).
 
@@ -10,14 +10,14 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
-| HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
+| HTTPRoute/TLSRoute/GRPCRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
 | Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string consisting of lower case alphanumeric characters, '-' or '.', specified in the `coredns.io/hostname` or `external-dns.alpha.kubernetes.io/hostname` annotations (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/test/service-annotation.yml#L8) for an example) | `.status.loadBalancer.ingress` |
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 
-<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.4.0.</br>
-<a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute.</br>
+<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.8.1+.</br>
+<a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute|TLSRoute|GRPCRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
 <a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
 
@@ -63,7 +63,7 @@ k8s_gateway ZONE
 ```
 
 
-* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute | VirtualServer ]`.
+* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute | TLSRoute | GRPCRoute | VirtualServer ]`.
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
@@ -227,6 +227,73 @@ To cleanup local environment do:
 ```
 make nuke
 ```
+
+## Apple Silicon Development
+
+Developing with apple silicon requires lima/colima installed on your machine. It sadly, did not work at all with kind.
+Below, you'll find the `yaml` used for developing with Cilium CNI and k3s.
+
+Colima version at the time: [v0.5.6](https://github.com/abiosoft/colima/releases/tag/v0.5.6)
+
+```yaml
+cpu: 6
+disk: 60
+memory: 16
+arch: host
+runtime: containerd
+kubernetes:
+  enabled: true
+  version: v1.28.2+k3s1
+  k3sArgs:
+    - --flannel-backend=none
+    - --disable=servicelb
+    - --disable=traefik
+    - --disable-network-policy
+    - --disable-kube-proxy
+autoActivate: true
+network:
+  address: false
+  dns: []
+  dnsHosts:
+    host.docker.internal: host.lima.internal
+  driver: slirp
+forwardAgent: false
+docker:
+  insecure-registries:
+    - localhost:5000
+    - host.docker.internal:5000
+vmType: vz
+rosetta: true
+mountType: virtiofs
+mountInotify: false
+cpuType: host
+layer: false
+provision:
+  - mode: system
+    script: |
+      set -e
+
+      # needed for cilium
+      mount bpffs -t bpf /sys/fs/bpf
+      mount --make-shared /sys/fs/bpf
+
+      mkdir -p /run/cilium/cgroupv2
+      mount -t cgroup2 none /run/cilium/cgroupv2
+      mount --make-shared /run/cilium/cgroupv2/
+      ln -s /opt/cni/bin/cilium-cni /usr/libexec/cni/cilium-cni
+sshConfig: true
+mounts: []
+env: {}
+cgroupsV2: false
+```
+
+### Steps
+
+1. In `Tiltfile.nerdctl`
+2. `colima start` with above configuration
+3. `tilt up -f Tiltfile.nerdctl` + space bar for the environment to trigger.
+
+The stacks should deploy and you'll have a proper stack that builds `k8s-gateway` with `coredns` and deploys to `kube-system` namespace.
 
 ## Also see
 
