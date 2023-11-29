@@ -74,10 +74,10 @@ k8s_yaml('./test/backend.yml')
 k8s_yaml('./test/gateway-api/crds.yml')
 
 # Gateway API
-k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1beta1')
+k8s_kind('HTTPRoute', api_version='gateway.networking.k8s.io/v1')
 k8s_kind('TLSRoute', api_version='gateway.networking.k8s.io/v1alpha2')
 k8s_kind('GRPCRoute', api_version='gateway.networking.k8s.io/v1alpha2')
-k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1beta1')
+k8s_kind('Gateway', api_version='gateway.networking.k8s.io/v1')
 k8s_yaml('./test/gateway-api/resources.yml')
 k8s_yaml('./test/gatewayclasses.yaml')
 k8s_yaml('./test/dual-stack/service-annotation.yml')
