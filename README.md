@@ -10,13 +10,15 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 
 | Kind | Matching Against | External IPs are from | 
 | ---- | ---------------- | -------- |
-| HTTPRoute/TLSRoute/GRPCRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
+| HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
+| TLSRoute<sup>[1](#foot1) | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
+| GRPCRoute<sup>[1](#foot1) | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
 | Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string consisting of lower case alphanumeric characters, '-' or '.', specified in the `coredns.io/hostname` or `external-dns.alpha.kubernetes.io/hostname` annotations (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/test/service-annotation.yml#L8) for an example) | `.status.loadBalancer.ingress` |
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 
-<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v0.8.1+.</br>
+<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.0.0+.</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute|TLSRoute|GRPCRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
 <a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
