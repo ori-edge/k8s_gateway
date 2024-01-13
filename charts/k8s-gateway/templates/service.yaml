@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: {{ include "k8s-gateway.fullname" . }}
   labels:
+{{- if .Values.service.labels }}
+    {{- toYaml .Values.service.labels | nindent 4 }}
+{{- end }}
     {{- include "k8s-gateway.labels" . | nindent 4 }}
   annotations:
 {{- if .Values.service.annotations }}
