@@ -18,7 +18,7 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 
-<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.0.0+. experimental channe</br>
+<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.0.0+. experimental channel</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute|TLSRoute|GRPCRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
 <a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
