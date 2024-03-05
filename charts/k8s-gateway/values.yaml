@@ -7,6 +7,9 @@ image:
 # Delegated domain
 domain: ""
 
+# Labels to apply to all resources
+customLabels: {}
+
 # TTL for non-apex responses (in seconds)
 ttl: 300
 
@@ -76,8 +79,13 @@ service:
   # ipFamilies:
   #   - IPv4
   #   - IPv6
+  useTcp: false
 
 nodeSelector: {}
+
+tolerations: []
+
+topologySpreadConstraints: []
 
 affinity: {}
 

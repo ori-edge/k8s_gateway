@@ -4,6 +4,9 @@ metadata:
   name: {{ include "k8s-gateway.fullname" . }}
   labels:
     {{- include "k8s-gateway.labels" . | nindent 4 }}
+    {{- if .Values.customLabels }}
+    {{ toYaml .Values.customLabels | trim | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -12,14 +15,17 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "k8s-gateway.selectorLabels" . | nindent 8 }}
+        {{- include "k8s-gateway.labels" . | nindent 8 }}
+        {{- if .Values.customLabels }}
+        {{ toYaml .Values.customLabels | trim | nindent 8 }}
+        {{- end }}
       annotations:
         checksum/config: {{ toYaml .Values | sha256sum }}
     spec:
       serviceAccountName: {{ include "k8s-gateway.serviceAccountName" . }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{- if .Values.image.registry }}{{ .Values.image.registry }}/{{- end }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
         {{- if .Values.secure }}
@@ -35,6 +41,11 @@ spec:
         - containerPort: 1053
           name: dns-udp
           protocol: UDP
+        {{- if (eq .Values.service.useTcp true) }}
+        - containerPort: 1053
+          name: dns-tcp
+          protocol: TCP
+        {{- end }}
         {{- range .Values.extraZonePlugins | uniq }}
         {{- if eq .name "prometheus" }}
         - containerPort: {{ .parameters | regexFind "[^\\:]*$" }}
@@ -73,6 +84,14 @@ spec:
             {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
