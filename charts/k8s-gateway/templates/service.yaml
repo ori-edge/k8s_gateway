@@ -7,6 +7,9 @@ metadata:
     {{- toYaml .Values.service.labels | nindent 4 }}
 {{- end }}
     {{- include "k8s-gateway.labels" . | nindent 4 }}
+    {{- if .Values.customLabels }}
+    {{ toYaml .Values.customLabels | trim | nindent 4 }}
+    {{- end }}
   annotations:
 {{- if .Values.service.annotations }}
     {{- toYaml .Values.service.annotations | nindent 4 }}
@@ -31,6 +34,15 @@ spec:
     {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
     nodePort: {{ .Values.service.nodePort }}
     {{- end }}
+  {{- if (eq .Values.service.useTcp true) }}
+  - port: {{ .Values.service.port }}
+    protocol: TCP
+    name: dns-tcp
+    targetPort: dns-tcp
+    {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
+    nodePort: {{ .Values.service.nodePort }}
+    {{- end }}
+  {{- end }}
   {{- if not (empty .Values.service.externalTrafficPolicy)}}
   externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   {{- end }}

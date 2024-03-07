@@ -9,6 +9,7 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | Parameter                        | Description                                                                               | Default               |
 | -------------------------------- | ----------------------------------------------------------------------------------------- | --------------------- |
 | `domain`                         | Delegated domain(s)                                                                       |                       |
+| `customLabels`                   | Labels to apply to all resources                                                          | `{}`                  |
 | `watchedResources`               | Limit what kind of resources to watch, e.g. `watchedResources: ["Ingress"]`               | `[]`                  |
 | `fallthrough.enabled`            | Enable fallthrough support                                                                | `false`               |
 | `fallthrough.zones`              | List of zones to enable fallthrough on                                                    | `[]`                  |
@@ -21,6 +22,8 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `image.tag`                      | Image tag                                                                                 | `latest`              |
 | `image.pullPolicy`               | Image pull policy                                                                         | `Always`              |
 | `nodeSelector`                   | Node labels for pod assignment                                                            | `{}`                  |
+| `tolerations`                    | Use to schedule on node taint to be not schedulable                                       | `[]`                  |
+| `topologySpreadConstraints`      | Use topology spread constraints to control how Pods are spread across your cluster        | `[]`                  |
 | `affinity`                       | Pod affinity                                                                              | `{}`                  |
 | `resources`                      | Pod resource requests & limits                                                            | `{}`                  |
 | `serviceAccount.create`          | Create ServiceAccount                                                                     | `true`                |
@@ -30,5 +33,6 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `service.nodePort`               | Node port when service type is `NodePort`. Randomly chosen by Kubernetes if not provided  |                       |
 | `service.loadBalancerIP`         | The IP address to use when using serviceType `LoadBalancer`                               |                       |
 | `service.clusterIP`              | The IP address to use when using serviceType `ClusterIP`. Randomly chosen by Kubernetes if not provided  |        |
+| `service.useTcp`                 | set this parameter to optionally expose the port on tcp as well as udp for the DNS protocol  | `false`            |
 | `replicaCount`                   | Number of replicas                                                                        | `1`                   |
 | `zoneFiles`                      | Inject few custom zone files                                                              | `[]`                  |
