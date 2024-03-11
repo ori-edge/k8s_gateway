@@ -3,6 +3,19 @@ entries:
   k8s-gateway:
   - apiVersion: v2
     appVersion: 0.4.0
+    created: "2024-03-11T04:58:30.652007902Z"
+    description: A Helm chart for the k8s_gateway CoreDNS plugin
+    digest: aeb1657a73ec535da8ebcab7c5ddcf7a78664ec2c72a91ee7f49606a25edc270
+    maintainers:
+    - email: mmkashin@gmail.com
+      name: Michael
+    name: k8s-gateway
+    type: application
+    urls:
+    - https://ori-edge.github.io/k8s_gateway/charts/k8s-gateway-2.4.0.tgz
+    version: 2.4.0
+  - apiVersion: v2
+    appVersion: 0.4.0
     created: "2024-01-13T19:16:48.538335291Z"
     description: A Helm chart for the k8s_gateway CoreDNS plugin
     digest: 26f6f3559e00507b187e17612b9977ad24d3218a6ed68d2b730b99750e19c07a
@@ -456,4 +469,4 @@ entries:
     urls:
     - https://ori-edge.github.io/k8s_gateway/charts/k8s-gateway-1.0.0.tgz
     version: 1.0.0
-generated: "2024-01-13T19:16:48.537620158Z"
+generated: "2024-03-11T04:58:30.651388335Z"
