@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/coredns/caddy v1.1.1
 	github.com/coredns/coredns v1.11.3
-	github.com/miekg/dns v1.1.58
+	github.com/miekg/dns v1.1.59
 	github.com/nginxinc/kubernetes-ingress v1.12.5
 	k8s.io/api v0.29.3
 	k8s.io/apimachinery v0.29.3
@@ -115,14 +115,14 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.17.0 // indirect
+	golang.org/x/tools v0.19.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.172.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
