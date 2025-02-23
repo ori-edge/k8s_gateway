@@ -104,7 +104,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 					ListFunc:  grpcRouteLister(ctx, ctrl.gwClient, core.NamespaceAll),
 					WatchFunc: grpcRouteWatcher(ctx, ctrl.gwClient, core.NamespaceAll),
 				},
-				&gatewayapi_v1alpha2.GRPCRoute{},
+				&gatewayapi_v1.GRPCRoute{},
 				defaultResyncPeriod,
 				cache.Indexers{grpcRouteHostnameIndex: grpcRouteHostnameIndexFunc},
 			)
@@ -271,7 +271,7 @@ func tlsRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) f
 
 func grpcRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.GatewayV1alpha2().GRPCRoutes(ns).List(ctx, opts)
+		return c.GatewayV1().GRPCRoutes(ns).List(ctx, opts)
 	}
 }
 
@@ -313,7 +313,7 @@ func tlsRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) 
 
 func grpcRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
-		return c.GatewayV1alpha2().GRPCRoutes(ns).Watch(ctx, opts)
+		return c.GatewayV1().GRPCRoutes(ns).Watch(ctx, opts)
 	}
 }
 
@@ -379,7 +379,7 @@ func tlsRouteHostnameIndexFunc(obj interface{}) ([]string, error) {
 }
 
 func grpcRouteHostnameIndexFunc(obj interface{}) ([]string, error) {
-	grpcRoute, ok := obj.(*gatewayapi_v1alpha2.GRPCRoute)
+	grpcRoute, ok := obj.(*gatewayapi_v1.GRPCRoute)
 	if !ok {
 		return []string{}, nil
 	}
@@ -549,7 +549,7 @@ func lookupGRPCRouteIndex(grpc, gw cache.SharedIndexInformer) func([]string) []n
 		log.Debugf("Found %d matching grpcRoute objects", len(objs))
 
 		for _, obj := range objs {
-			grpcRoute, _ := obj.(*gatewayapi_v1alpha2.GRPCRoute)
+			grpcRoute, _ := obj.(*gatewayapi_v1.GRPCRoute)
 			result = append(result, lookupGateways(gw, grpcRoute.Spec.ParentRefs, grpcRoute.Namespace)...)
 		}
 		return

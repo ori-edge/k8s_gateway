@@ -16,7 +16,7 @@ var dropPlugins = map[string]bool{
 	"k8s_external": true,
 }
 
-const pluginVersion = "0.4.0"
+const pluginVersion = "0.5.0"
 
 func init() {
 	var directives []string
