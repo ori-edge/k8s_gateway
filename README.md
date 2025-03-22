@@ -16,12 +16,13 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 | Ingress | all FQDNs from `spec.rules[*].host` matching configured zones | `.status.loadBalancer.ingress` |
 | Service<sup>[3](#foot3)</sup> | `name.namespace` + any of the configured zones OR any string consisting of lower case alphanumeric characters, '-' or '.', specified in the `coredns.io/hostname` or `external-dns.alpha.kubernetes.io/hostname` annotations (see [this](https://github.com/ori-edge/k8s_gateway/blob/master/test/single-stack/service-annotation.yml#L8) for an example) | `.status.loadBalancer.ingress` |
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
+| DNSEndpoint<sup>[5](#foot4)</sup> | `spec.endpoints[*].targets` | |
 
 
 <a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.0.0+ experimental channel.</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute|TLSRoute|GRPCRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
-<a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
+<a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.
 
 Currently only supports A-type queries, all other queries result in NODATA responses.
 
@@ -65,7 +66,7 @@ k8s_gateway ZONE
 ```
 
 
-* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute | TLSRoute | GRPCRoute | VirtualServer ]`.
+* `resources` a subset of supported Kubernetes resources to watch. By default all supported resources are monitored. Available options are `[ Ingress | Service | HTTPRoute | TLSRoute | GRPCRoute | VirtualServer | DNSEndpoint ]`.
 * `ttl` can be used to override the default TTL value of 60 seconds.
 * `apex` can be used to override the default apex record value of `{ReleaseName}-k8s-gateway.{Namespace}`
 * `secondary` can be used to specify the optional apex record value of a peer nameserver running in the cluster (see `Dual Nameserver Deployment` section below).
@@ -172,7 +173,7 @@ This repository contains a [Tiltfile](https://tilt.dev/) that can be used for lo
 make setup
 ```
 
-To bring up a tilt development enviornment run `tilt up` or:
+To bring up a tilt development environment run `tilt up` or:
 
 ```
 make up
@@ -245,7 +246,7 @@ arch: host
 runtime: containerd
 kubernetes:
   enabled: true
-  version: v1.28.2+k3s1
+  version: v1.31.0+k3s1
   k3sArgs:
     - --flannel-backend=none
     - --disable=servicelb

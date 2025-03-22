@@ -13,7 +13,7 @@ import (
 	k8s_nginx "github.com/nginxinc/kubernetes-ingress/pkg/client/clientset/versioned"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	meta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -22,6 +22,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
+	"sigs.k8s.io/external-dns/endpoint"
+	"sigs.k8s.io/external-dns/source"
 	gatewayapi_v1 "sigs.k8s.io/gateway-api/apis/v1"
 	gatewayapi_v1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gatewayClient "sigs.k8s.io/gateway-api/pkg/client/clientset/versioned"
@@ -36,8 +38,17 @@ const (
 	tlsRouteHostnameIndex            = "tlsRouteHostname"
 	grpcRouteHostnameIndex           = "grpcRouteHostname"
 	virtualServerHostnameIndex       = "virtualServerHostname"
+	externalDNSHostnameIndex         = "externalDNSHostname"
 	hostnameAnnotationKey            = "coredns.io/hostname"
 	externalDnsHostnameAnnotationKey = "external-dns.alpha.kubernetes.io/hostname"
+	externalDNSEndpointGroup         = "externaldns.k8s.io/v1alpha1"
+	externalDNSEndpointKind          = "DNSEndpoint"
+)
+
+var (
+	apiextensionsClient  *apiextensionsclientset.Clientset
+	externaldnsCRDClient *rest.RESTClient
+	externaldnsScheme    *runtime.Scheme
 )
 
 // KubeController stores the current runtime configuration and cache
@@ -58,7 +69,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		gwClient:    gw,
 	}
 
-	if existGatewayCRDs(ctx, gw) {
+	if crdExists(apiextensionsClient, "gatewayclasses.gateway.networking.k8s.io") {
 		gatewayController := cache.NewSharedIndexInformer(
 			&cache.ListWatch{
 				ListFunc:  gatewayLister(ctx, ctrl.gwClient, core.NamespaceAll),
@@ -104,7 +115,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 					ListFunc:  grpcRouteLister(ctx, ctrl.gwClient, core.NamespaceAll),
 					WatchFunc: grpcRouteWatcher(ctx, ctrl.gwClient, core.NamespaceAll),
 				},
-				&gatewayapi_v1alpha2.GRPCRoute{},
+				&gatewayapi_v1.GRPCRoute{},
 				defaultResyncPeriod,
 				cache.Indexers{grpcRouteHostnameIndex: grpcRouteHostnameIndexFunc},
 			)
@@ -113,7 +124,7 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		}
 	}
 
-	if existVirtualServerCRDs(ctx, nc) {
+	if crdExists(apiextensionsClient, "virtualservers.k8s.nginx.org") {
 		if resource := lookupResource("VirtualServer"); resource != nil {
 			virtualServerController := cache.NewSharedIndexInformer(
 				&cache.ListWatch{
@@ -155,6 +166,22 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		)
 		resource.lookup = lookupServiceIndex(serviceController)
 		ctrl.controllers = append(ctrl.controllers, serviceController)
+	}
+
+	if crdExists(apiextensionsClient, "dnsendpoints.externaldns.k8s.io") {
+		if resource := lookupResource("DNSEndpoint"); resource != nil {
+			dnsEndpointController := cache.NewSharedIndexInformer(
+				&cache.ListWatch{
+					WatchFunc: dnsEndpointWatcher(ctx, core.NamespaceAll),
+					ListFunc:  dnsEndpointLister(ctx, core.NamespaceAll),
+				},
+				&endpoint.DNSEndpoint{},
+				defaultResyncPeriod,
+				cache.Indexers{externalDNSHostnameIndex: dnsEndpointTargetIndexFunc},
+			)
+			resource.lookup = lookupDNSEndpoint(dnsEndpointController)
+			ctrl.controllers = append(ctrl.controllers, dnsEndpointController)
+		}
 	}
 
 	return ctrl
@@ -199,6 +226,11 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 		return err
 	}
 
+	apiextensionsClient, err = apiextensionsclientset.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
 	nginxClient, err := k8s_nginx.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
@@ -209,6 +241,11 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 		return err
 	}
 
+	externaldnsCRDClient, externaldnsScheme, err = source.NewCRDClientForAPIVersionKind(kubeClient, gw.configFile, "", externalDNSEndpointGroup, externalDNSEndpointKind)
+	if err != nil {
+		log.Warningf("crd %s not found. ignoring and continuing execution", externalDNSEndpointGroup)
+	}
+
 	gw.Controller = newKubeController(ctx, kubeClient, gwAPIClient, nginxClient)
 	go gw.Controller.run()
 
@@ -216,29 +253,14 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 
 }
 
-func existGatewayCRDs(ctx context.Context, c *gatewayClient.Clientset) bool {
-	_, err := c.GatewayV1().Gateways("").List(ctx, metav1.ListOptions{})
-	return handleCRDCheckError(err, "GatewayAPI", "gateway.networking.k8s.io")
-}
-
-func existVirtualServerCRDs(ctx context.Context, c *k8s_nginx.Clientset) bool {
-	_, err := c.K8sV1().VirtualServers("").List(ctx, metav1.ListOptions{})
-	return handleCRDCheckError(err, "VirtualServer", "k8s.nginx.org/v1")
-}
-
-func handleCRDCheckError(err error, resourceName string, apiGroup string) bool {
-	if meta.IsNoMatchError(err) || runtime.IsNotRegisteredError(err) || apierrors.IsNotFound(err) {
-		log.Infof("%s CRDs are not found. Not syncing %s resources.", resourceName, resourceName)
-		return false
-	}
-	if apierrors.IsForbidden(err) {
-		log.Infof("access to `%s` is forbidden, please check RBAC. Not syncing %s resources.", apiGroup, resourceName)
-		return false
-	}
+func crdExists(clientset *apiextensionsclientset.Clientset, crdName string) bool {
+	_, err := clientset.ApiextensionsV1().CustomResourceDefinitions().Get(context.TODO(), crdName, metav1.GetOptions{})
 	if err != nil {
-		panic(err)
+		log.Warningf("error getting crd %s, error: %s", crdName, err.Error())
+	} else {
+		log.Infof("crd %s found", crdName)
 	}
-	return true
+	return err == nil
 }
 
 func (gw *Gateway) getClientConfig() (*rest.Config, error) {
@@ -271,7 +293,7 @@ func tlsRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) f
 
 func grpcRouteLister(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (runtime.Object, error) {
 	return func(opts metav1.ListOptions) (runtime.Object, error) {
-		return c.GatewayV1alpha2().GRPCRoutes(ns).List(ctx, opts)
+		return c.GatewayV1().GRPCRoutes(ns).List(ctx, opts)
 	}
 }
 
@@ -313,7 +335,7 @@ func tlsRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) 
 
 func grpcRouteWatcher(ctx context.Context, c gatewayClient.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
-		return c.GatewayV1alpha2().GRPCRoutes(ns).Watch(ctx, opts)
+		return c.GatewayV1().GRPCRoutes(ns).Watch(ctx, opts)
 	}
 }
 
@@ -338,6 +360,28 @@ func serviceWatcher(ctx context.Context, c kubernetes.Interface, ns string) func
 func virtualServerWatcher(ctx context.Context, c k8s_nginx.Interface, ns string) func(metav1.ListOptions) (watch.Interface, error) {
 	return func(opts metav1.ListOptions) (watch.Interface, error) {
 		return c.K8sV1().VirtualServers(ns).Watch(ctx, opts)
+	}
+}
+
+func dnsEndpointWatcher(ctx context.Context, ns string) func(metav1.ListOptions) (watch.Interface, error) {
+	return func(opts metav1.ListOptions) (watch.Interface, error) {
+		opts.Watch = true
+		return externaldnsCRDClient.Get().
+			Resource("dnsendpoints").
+			Namespace(ns).
+			VersionedParams(&opts, metav1.ParameterCodec).
+			Watch(ctx)
+	}
+}
+
+func dnsEndpointLister(ctx context.Context, ns string) func(metav1.ListOptions) (runtime.Object, error) {
+	return func(opts metav1.ListOptions) (runtime.Object, error) {
+		return externaldnsCRDClient.Get().
+			Resource("dnsendpoints").
+			Namespace(ns).
+			VersionedParams(&opts, metav1.ParameterCodec).
+			Do(ctx).
+			Get()
 	}
 }
 
@@ -379,7 +423,7 @@ func tlsRouteHostnameIndexFunc(obj interface{}) ([]string, error) {
 }
 
 func grpcRouteHostnameIndexFunc(obj interface{}) ([]string, error) {
-	grpcRoute, ok := obj.(*gatewayapi_v1alpha2.GRPCRoute)
+	grpcRoute, ok := obj.(*gatewayapi_v1.GRPCRoute)
 	if !ok {
 		return []string{}, nil
 	}
@@ -426,6 +470,19 @@ func serviceHostnameIndexFunc(obj interface{}) ([]string, error) {
 	log.Debugf("Adding index %s for service %s", hostname, service.Name)
 
 	return []string{hostname}, nil
+}
+
+func dnsEndpointTargetIndexFunc(obj interface{}) ([]string, error) {
+	dnsEndpoint, ok := obj.(*endpoint.DNSEndpoint)
+	if !ok {
+		return []string{}, nil
+	}
+	var hostnames []string
+	for _, endpoint := range dnsEndpoint.Spec.Endpoints {
+		log.Debugf("Adding index %s for DNSEndpoint %s", endpoint.DNSName, dnsEndpoint.Name)
+		hostnames = append(hostnames, endpoint.DNSName)
+	}
+	return hostnames, nil
 }
 
 func checkServiceAnnotation(annotation string, service *core.Service) (string, bool) {
@@ -549,7 +606,7 @@ func lookupGRPCRouteIndex(grpc, gw cache.SharedIndexInformer) func([]string) []n
 		log.Debugf("Found %d matching grpcRoute objects", len(objs))
 
 		for _, obj := range objs {
-			grpcRoute, _ := obj.(*gatewayapi_v1alpha2.GRPCRoute)
+			grpcRoute, _ := obj.(*gatewayapi_v1.GRPCRoute)
 			result = append(result, lookupGateways(gw, grpcRoute.Spec.ParentRefs, grpcRoute.Namespace)...)
 		}
 		return
@@ -590,6 +647,33 @@ func lookupIngressIndex(ctrl cache.SharedIndexInformer) func([]string) []netip.A
 		}
 
 		return
+	}
+}
+
+func lookupDNSEndpoint(ctrl cache.SharedIndexInformer) func([]string) (results []netip.Addr) {
+	return func(indexKeys []string) (result []netip.Addr) {
+		var objs []interface{}
+		for _, key := range indexKeys {
+			obj, _ := ctrl.GetIndexer().ByIndex(externalDNSHostnameIndex, strings.ToLower(key))
+			objs = append(objs, obj...)
+		}
+		log.Debugf("Found %d matching DNSEndpoint objects", len(objs))
+		for _, obj := range objs {
+			dnsEndpoint, _ := obj.(*endpoint.DNSEndpoint)
+
+			for _, endpoint := range dnsEndpoint.Spec.Endpoints {
+				for _, target := range endpoint.Targets {
+					if endpoint.RecordType == "A" {
+						addr, err := netip.ParseAddr(target)
+						if err != nil {
+							continue
+						}
+						result = append(result, addr)
+					}
+				}
+			}
+		}
+		return result
 	}
 }
 

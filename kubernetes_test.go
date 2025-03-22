@@ -180,7 +180,14 @@ func addTLSRoutes(client gatewayClient.Interface) {
 func addGRPCRoutes(client gatewayClient.Interface) {
 	ctx := context.TODO()
 	for _, r := range testGRPCRoutes {
-		_, err := client.GatewayV1alpha2().GRPCRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		_, err := client.GatewayV1().GRPCRoutes("ns1").Create(ctx, r, meta.CreateOptions{})
+		if err != nil {
+			log.Warningf("Failed to Create a GRPC Object :%s", err)
+		}
+	}
+
+	for _, r2 := range testGRPCRoutesLegacy {
+		_, err := client.GatewayV1alpha2().GRPCRoutes("ns1").Create(ctx, r2, meta.CreateOptions{})
 		if err != nil {
 			log.Warningf("Failed to Create a GRPC Object :%s", err)
 		}
@@ -348,13 +355,26 @@ var testTLSRoutes = map[string]*gatewayapi_v1alpha2.TLSRoute{
 	},
 }
 
-var testGRPCRoutes = map[string]*gatewayapi_v1alpha2.GRPCRoute{
+var testGRPCRoutes = map[string]*gatewayapi_v1.GRPCRoute{
 	"route-1.gw-1.example.com": {
 		ObjectMeta: meta.ObjectMeta{
 			Name:      "route-1",
 			Namespace: "ns1",
 		},
-		Spec: gatewayapi_v1alpha2.GRPCRouteSpec{
+		Spec: gatewayapi_v1.GRPCRouteSpec{
+			//ParentRefs: []gatewayapi_v1.ParentRef{},
+			Hostnames: []gatewayapi_v1.Hostname{"route-1.gw-1.example.com"},
+		},
+	},
+}
+
+var testGRPCRoutesLegacy = map[string]*gatewayapi_v1alpha2.GRPCRoute{
+	"route-1.gw-1.example.com": {
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "route-1",
+			Namespace: "ns1",
+		},
+		Spec: gatewayapi_v1.GRPCRouteSpec{
 			//ParentRefs: []gatewayapi_v1.ParentRef{},
 			Hostnames: []gatewayapi_v1alpha2.Hostname{"route-1.gw-1.example.com"},
 		},

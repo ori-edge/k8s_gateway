@@ -47,6 +47,10 @@ var orderedResources = []*resourceWithIndex{
 		name:   "Service",
 		lookup: noop,
 	},
+	{
+		name:   "DNSEndpoint",
+		lookup: noop,
+	},
 }
 
 var (
@@ -136,7 +140,7 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 
 	if !gw.Controller.HasSynced() {
 		// TODO maybe there's a better way to do this? e.g. return an error back to the client?
-		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("Could not sync required resources"))
+		return dns.RcodeServerFailure, plugin.Error(thisPlugin, fmt.Errorf("could not sync required resources"))
 	}
 
 	var isRootZoneQuery bool
