@@ -1,3 +1,4 @@
+**This project is no longer maintained. Please use the following fork: https://github.com/k8s-gateway/k8s_gateway**
 # k8s_gateway
 
 A CoreDNS plugin that is very similar to [k8s_external](https://coredns.io/plugins/k8s_external/) but supporting all types of Kubernetes external resources - Ingress, Service of type LoadBalancer, HTTPRoutes, TLSRoutes, GRPCRoutes from the [Gateway API project](https://gateway-api.sigs.k8s.io/).
