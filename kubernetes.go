@@ -54,8 +54,36 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 
 	ctrl := &KubeController{
 		client:      c,
-		nginxClient: nc,
 		gwClient:    gw,
+		nginxClient: nc,
+	}
+
+	if resource := lookupResource("Ingress"); resource != nil {
+		ingressController := cache.NewSharedIndexInformer(
+			&cache.ListWatch{
+				ListFunc:  ingressLister(ctx, ctrl.client, core.NamespaceAll),
+				WatchFunc: ingressWatcher(ctx, ctrl.client, core.NamespaceAll),
+			},
+			&networking.Ingress{},
+			defaultResyncPeriod,
+			cache.Indexers{ingressHostnameIndex: ingressHostnameIndexFunc},
+		)
+		resource.lookup = lookupIngressIndex(ingressController)
+		ctrl.controllers = append(ctrl.controllers, ingressController)
+	}
+
+	if resource := lookupResource("Service"); resource != nil {
+		serviceController := cache.NewSharedIndexInformer(
+			&cache.ListWatch{
+				ListFunc:  serviceLister(ctx, ctrl.client, core.NamespaceAll),
+				WatchFunc: serviceWatcher(ctx, ctrl.client, core.NamespaceAll),
+			},
+			&core.Service{},
+			defaultResyncPeriod,
+			cache.Indexers{serviceHostnameIndex: serviceHostnameIndexFunc},
+		)
+		resource.lookup = lookupServiceIndex(serviceController)
+		ctrl.controllers = append(ctrl.controllers, serviceController)
 	}
 
 	if existGatewayCRDs(ctx, gw) {
@@ -129,34 +157,6 @@ func newKubeController(ctx context.Context, c *kubernetes.Clientset, gw *gateway
 		}
 	}
 
-	if resource := lookupResource("Ingress"); resource != nil {
-		ingressController := cache.NewSharedIndexInformer(
-			&cache.ListWatch{
-				ListFunc:  ingressLister(ctx, ctrl.client, core.NamespaceAll),
-				WatchFunc: ingressWatcher(ctx, ctrl.client, core.NamespaceAll),
-			},
-			&networking.Ingress{},
-			defaultResyncPeriod,
-			cache.Indexers{ingressHostnameIndex: ingressHostnameIndexFunc},
-		)
-		resource.lookup = lookupIngressIndex(ingressController)
-		ctrl.controllers = append(ctrl.controllers, ingressController)
-	}
-
-	if resource := lookupResource("Service"); resource != nil {
-		serviceController := cache.NewSharedIndexInformer(
-			&cache.ListWatch{
-				ListFunc:  serviceLister(ctx, ctrl.client, core.NamespaceAll),
-				WatchFunc: serviceWatcher(ctx, ctrl.client, core.NamespaceAll),
-			},
-			&core.Service{},
-			defaultResyncPeriod,
-			cache.Indexers{serviceHostnameIndex: serviceHostnameIndexFunc},
-		)
-		resource.lookup = lookupServiceIndex(serviceController)
-		ctrl.controllers = append(ctrl.controllers, serviceController)
-	}
-
 	return ctrl
 }
 
@@ -187,16 +187,19 @@ func (ctrl *KubeController) HasSynced() bool {
 	return ctrl.hasSynced
 }
 
+// Ready implements the ready.Readiness interface.
+func (ctrl *KubeController) Ready() bool { return ctrl.HasSynced() }
+
 // RunKubeController kicks off the k8s controllers
-func (gw *Gateway) RunKubeController(ctx context.Context) error {
+func (gw *Gateway) RunKubeController(ctx context.Context) {
 	config, err := gw.getClientConfig()
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	kubeClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
 	nginxClient, err := k8s_nginx.NewForConfig(config)
@@ -206,13 +209,30 @@ func (gw *Gateway) RunKubeController(ctx context.Context) error {
 
 	gwAPIClient, err := gatewayClient.NewForConfig(config)
 	if err != nil {
-		return err
+		panic(err.Error())
 	}
 
-	gw.Controller = newKubeController(ctx, kubeClient, gwAPIClient, nginxClient)
-	go gw.Controller.run()
+	// waiting for api server to become ready
+	readyUrl := kubeClient.DiscoveryClient.RESTClient().Get().AbsPath("/readyz")
+	readyCh := make(chan bool)
+	go func() {
+		for {
+			log.Info("Waiting for api-server to become ready")
+			_, err := readyUrl.DoRaw(context.Background())
+			if err == nil {
+				log.Info("api-server ready, proceeding")
+				readyCh <- true
+				break
+			}
+			log.Infof("api-server not ready: %q, retrying", err)
+		}
+	}()
 
-	return nil
+	go func() {
+		<-readyCh
+		gw.Controller = newKubeController(ctx, kubeClient, gwAPIClient, nginxClient)
+		gw.Controller.run()
+	}()
 
 }
 
@@ -236,7 +256,8 @@ func handleCRDCheckError(err error, resourceName string, apiGroup string) bool {
 		return false
 	}
 	if err != nil {
-		panic(err)
+		log.Infof("Encountered unexpected error %q. Not syncing %s resources.", err, resourceName)
+		return false
 	}
 	return true
 }

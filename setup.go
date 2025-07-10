@@ -26,10 +26,7 @@ func setup(c *caddy.Controller) error {
 		return plugin.Error(thisPlugin, err)
 	}
 
-	err = gw.RunKubeController(context.Background())
-	if err != nil {
-		return plugin.Error(thisPlugin, err)
-	}
+	gw.RunKubeController(context.Background())
 	gw.ExternalAddrFunc = gw.SelfAddress
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
