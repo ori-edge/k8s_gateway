@@ -9,7 +9,7 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 
 `k8s_gateway` resolves Kubernetes resources with their external IP addresses based on zones specified in the configuration. This plugin will resolve the following type of resources:
 
-| Kind | Matching Against | External IPs are from | 
+| Kind | Matching Against | External IPs are from |
 | ---- | ---------------- | -------- |
 | HTTPRoute<sup>[1](#foot1)</sup> | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
 | TLSRoute<sup>[1](#foot1) | all FQDNs from `spec.hostnames` matching configured zones | `gateway.status.addresses`<sup>[2](#foot2)</sup> |
@@ -19,7 +19,7 @@ This plugin relies on its own connection to the k8s API server and doesn't share
 | VirtualServer<sup>[4](#foot4)</sup> | `spec.host` | `.status.externalEnpoints.ip` |
 
 
-<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.0.0+ experimental channel.</br>
+<a name="f1">1</a>: Currently supported version of GatewayAPI CRDs is v1.2.0+ experimental channel.</br>
 <a name="f2">2</a>: Gateway is a separate resource specified in the `spec.parentRefs` of HTTPRoute|TLSRoute|GRPCRoute.</br>
 <a name="f3">3</a>: Only resolves service of type LoadBalancer</br>
 <a name="f4">4</a>: Currently supported version of [nginxinc kubernetes-ingress](https://github.com/nginxinc/kubernetes-ingress) is 1.12.3</br>
@@ -48,14 +48,14 @@ kubectl apply -f https://raw.githubusercontent.com/ori-edge/k8s_gateway/master/e
 The only required configuration option is the zone that plugin should be authoritative for:
 
 ```
-k8s_gateway ZONE 
+k8s_gateway ZONE
 ```
 
 Additional configuration options can be used to further customize the behaviour of a plugin:
 
 ```
 {
-k8s_gateway ZONE 
+k8s_gateway ZONE
     resources [RESOURCES...]
     ttl TTL
     apex APEX
@@ -73,7 +73,7 @@ k8s_gateway ZONE
 * `kubeconfig` can be used to connect to a remote Kubernetes cluster using a kubeconfig file. `CONTEXT` is optional, if not set, then the current context specified in kubeconfig will be used. It supports TLS, username and password, or token-based authentication.
 * `fallthrough` if zone matches and no record can be generated, pass request to the next plugin. If **[ZONES...]** is omitted, then fallthrough happens for all zones for which the plugin is authoritative. If specific zones are listed (for example `in-addr.arpa` and `ip6.arpa`), then only queries for those zones will be subject to fallthrough.
 
-Example: 
+Example:
 
 ```
 k8s_gateway example.com {
@@ -87,7 +87,7 @@ k8s_gateway example.com {
 
 ## Dual Nameserver Deployment
 
-Most of the time, deploying a single `k8s_gateway` instance is enough to satisfy most popular DNS resolvers. However, some of the stricter resolvers expect a zone to be available on at least two servers (RFC1034, section 4.1). In order to satisfy this requirement, a pair of `k8s_gateway` instances need to be deployed, each with its own unique loadBalancer IP. This way the zone NS record will point to a pair of glue records, hard-coded to these IPs. 
+Most of the time, deploying a single `k8s_gateway` instance is enough to satisfy most popular DNS resolvers. However, some of the stricter resolvers expect a zone to be available on at least two servers (RFC1034, section 4.1). In order to satisfy this requirement, a pair of `k8s_gateway` instances need to be deployed, each with its own unique loadBalancer IP. This way the zone NS record will point to a pair of glue records, hard-coded to these IPs.
 
 Another consideration is that in this case `k8s_gateway` instances need to know about their peers in order to provide consistent responses (at least the same set of nameservers). Configuration-wise this would require the following:
 
@@ -149,7 +149,7 @@ For more details refer to [this CoreDNS doc](https://coredns.io/2017/07/25/compi
 
 ## Release
 
-### Helm Charts 
+### Helm Charts
 
 If the change was made only to helm charts, only two things are required:
 
@@ -300,5 +300,5 @@ The stacks should deploy and you'll have a proper stack that builds `k8s-gateway
 
 ## Also see
 
-[Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)  
+[Blogpost](https://medium.com/from-the-edge/a-self-hosted-external-dns-resolver-for-kubernetes-111a27d6fc2c)
 [Helm repo guide](https://medium.com/@mattiaperi/create-a-public-helm-chart-repository-with-github-pages-49b180dbb417)
