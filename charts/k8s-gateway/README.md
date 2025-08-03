@@ -21,6 +21,7 @@ The following table lists the configurable parameters of the k8s_gateway chart a
 | `image.repository`               | Image repository                                                                          | `oriedge/k8s_gateway` |
 | `image.tag`                      | Image tag                                                                                 | `latest`              |
 | `image.pullPolicy`               | Image pull policy                                                                         | `Always`              |
+| `image.imagePullSecrets`         | Image registry secret names                                                               | `[]`                  |
 | `nodeSelector`                   | Node labels for pod assignment                                                            | `{}`                  |
 | `tolerations`                    | Use to schedule on node taint to be not schedulable                                       | `[]`                  |
 | `topologySpreadConstraints`      | Use topology spread constraints to control how Pods are spread across your cluster        | `[]`                  |

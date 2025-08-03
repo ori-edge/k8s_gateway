@@ -3,6 +3,7 @@ image:
   repository: oriedge/k8s_gateway
   tag: v0.4.0
   pullPolicy: IfNotPresent
+  imagePullSecrets: []
 
 # Delegated domain
 domain: ""

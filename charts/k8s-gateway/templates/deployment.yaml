@@ -23,6 +23,10 @@ spec:
         checksum/config: {{ toYaml .Values | sha256sum }}
     spec:
       serviceAccountName: {{ include "k8s-gateway.serviceAccountName" . }}
+      {{- with .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{- if .Values.image.registry }}{{ .Values.image.registry }}/{{- end }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
