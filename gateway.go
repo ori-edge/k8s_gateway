@@ -70,6 +70,7 @@ type Gateway struct {
 	secondNS         string
 	configFile       string
 	configContext    string
+	prefixes         []netip.Prefix
 	ExternalAddrFunc func(request.Request) []dns.RR
 
 	Fall fall.F
@@ -176,6 +177,9 @@ func (gw *Gateway) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Ms
 	var ipv6Addrs []netip.Addr
 
 	for _, addr := range addrs {
+		if len(gw.prefixes) > 0 && !matchIpNetPrefix(addr, gw.prefixes) {
+			continue
+		}
 		if addr.Is4() {
 			ipv4Addrs = append(ipv4Addrs, addr)
 		}
@@ -317,4 +321,14 @@ func stripClosingDot(s string) string {
 		return strings.TrimSuffix(s, ".")
 	}
 	return s
+}
+
+// Returns true if the IP matches at least one of the IP network prefixes
+func matchIpNetPrefix(ip netip.Addr, prefixes []netip.Prefix) bool {
+	for _, prefix := range prefixes {
+		if prefix.Contains(ip) {
+			return true
+		}
+	}
+	return false
 }

@@ -22,6 +22,9 @@ watchedResources: []
 # Service name of a secondary DNS server (should be `serviceName.namespace`)
 secondary: ""
 
+# List of IP CIDRs to filter
+prefixes: []
+
 # Enabled fallthrough for k8s_gateway
 fallthrough:
   enabled: false

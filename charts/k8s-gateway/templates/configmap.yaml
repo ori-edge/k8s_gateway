@@ -29,6 +29,9 @@ data:
           {{- if .Values.watchedResources }}
           resources {{ join " " .Values.watchedResources }}
           {{- end }}
+          {{- if .Values.prefixes }}
+          prefixes {{ join " " .Values.prefixes }}
+          {{- end }}
           {{- if .Values.fallthrough.enabled }}
           fallthrough {{- range .Values.fallthrough.zones }} {{ . }} {{- end }}
           {{- end }}

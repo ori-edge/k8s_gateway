@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"net/netip"
 
 	"strconv"
 
@@ -103,6 +104,18 @@ func parse(c *caddy.Controller) (*Gateway, error) {
 				gw.configFile = args[0]
 				if len(args) == 2 {
 					gw.configContext = args[1]
+				}
+			case "prefixes":
+				args := c.RemainingArgs()
+				if len(args) == 0 {
+					return nil, c.ArgErr()
+				}
+				for _, arg := range args {
+					prefix, err := netip.ParsePrefix(arg)
+					if err != nil {
+						return nil, c.Errf("Invalid if prefix: %s", arg)
+					}
+					gw.prefixes = append(gw.prefixes, prefix)
 				}
 			default:
 				return nil, c.Errf("Unknown property '%s'", c.Val())
